@@ -374,6 +374,7 @@ export default function Home() {
             <div className="max-w-3xl mx-auto relative min-h-[500px]">
               
               {/* Highlight Overlay */}
+              
               <div className="absolute inset-0 pointer-events-none" style={{ padding: '0px' }}>
                 <div
                   className="whitespace-pre-wrap wrap-break-word text-lg leading-loose font-serif text-transparent pl-8"
