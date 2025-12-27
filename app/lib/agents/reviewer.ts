@@ -1,5 +1,5 @@
 import { anthropic } from "@ai-sdk/anthropic";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 
 const CommentSchema = z.object({
@@ -26,10 +26,12 @@ export async function generateComments(document: string, focus?: string) {
   console.log("[reviewer] ============================");
 
   try {
-    const result = await generateObject({
+    const { output } = await generateText({
       model: anthropic("claude-sonnet-4-20250514"),
-      schema: z.object({
-        comments: z.array(CommentSchema),
+      output: Output.object({
+        schema: z.object({
+          comments: z.array(CommentSchema),
+        }),
       }),
       system: `You are an expert writing coach. Generate inline comments for the document.
 ${focus ? `Focus on: ${focus.toUpperCase()}` : ""}
@@ -53,13 +55,13 @@ Generate 3-5 specific, actionable comments using only 'insert', 'rewrite', or 'p
     });
 
     console.log("[reviewer] ====== RECEIVED FROM LLM ======");
-    console.log("[reviewer] Generated comments:", result.object.comments.length);
+    console.log("[reviewer] Generated comments:", output.comments.length);
     console.log("[reviewer] Comments:");
-    result.object.comments.forEach((c, i) => {
+    output.comments.forEach((c: any, i: number) => {
       console.log(`[reviewer] Comment ${i + 1}:`, JSON.stringify(c, null, 2));
     });
     console.log("[reviewer] ==================================");
-    return result.object.comments;
+    return output.comments;
   } catch (error) {
     console.error("[reviewer] Error generating comments:", error);
     throw error;

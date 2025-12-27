@@ -90,20 +90,20 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`group flex relative flex-col border-b border-stone-200 transition-all cursor-pointer overflow-hidden
-        ${isActive ? "bg-white shadow-[inset_4px_0_0_0_#1c1917]" : "hover:bg-stone-50/80"}`}
+      className={`group flex relative flex-col border border-stone-200 rounded-lg transition-all cursor-pointer overflow-hidden
+        ${isActive ? "bg-white ring-2 ring-stone-900 shadow-lg" : "bg-white hover:border-stone-300 hover:shadow-sm"}`}
     >
       {/* Small side color bar */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${isActive ? "opacity-0" : styles.badge.split(' ')[0]}`} />
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${styles.badge.split(' ')[0]}`} />
       
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-3">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-black uppercase tracking-[0.15em] px-2 py-1 rounded ${styles.badge}`}>
+            <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${styles.badge}`}>
               {comment.category}
             </span>
             {comment.impact === 'high' && (
-              <span className="text-[10px] font-black text-white bg-stone-900 px-2 py-1 rounded uppercase tracking-[0.15em]">
+              <span className="text-[9px] font-black text-white bg-stone-900 px-1.5 py-0.5 rounded uppercase tracking-widest">
                 Critical
               </span>
             )}
@@ -112,29 +112,29 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
             onClick={(e) => { e.stopPropagation(); onDismiss(comment.id); }}
             className="text-stone-300 hover:text-stone-900 opacity-0 group-hover:opacity-100 transition-opacity p-1"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <p className={`text-base leading-relaxed font-semibold mb-4 ${isActive ? "text-stone-900" : "text-stone-700"}`}>
+        <p className={`text-[14px] leading-relaxed font-medium mb-3 ${isActive ? "text-stone-900" : "text-stone-600"}`}>
           {comment.comment}
         </p>
 
         {isActive && comment.suggestion && (
-          <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className={`p-4 bg-white border ${styles.border} rounded-xl shadow-sm`}>
-              <p className={`text-[10px] font-black mb-2 uppercase tracking-[0.15em] ${styles.text}`}>Suggested Revision</p>
-              <p className="text-[17px] text-stone-900 italic font-serif leading-relaxed">
+          <div className="mt-3 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className={`p-3 bg-stone-50 border ${styles.border} rounded-md`}>
+              <p className={`text-[9px] font-black mb-1.5 uppercase tracking-widest ${styles.text}`}>Revision</p>
+              <p className="text-[15px] text-stone-900 italic font-serif leading-relaxed">
                 {comment.suggestion}
               </p>
             </div>
             
             <button
               onClick={(e) => { e.stopPropagation(); onApply(comment); }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-stone-900 text-white rounded-xl text-sm font-bold hover:bg-stone-800 transition-all active:scale-[0.98] shadow-lg shadow-stone-200"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-stone-900 text-white rounded-md text-xs font-bold hover:bg-stone-800 transition-all active:scale-[0.97]"
             >
-              <Check className="w-4 h-4" />
-              Accept and Apply
+              <Check className="w-3.5 h-3.5" />
+              Replace text
             </button>
           </div>
         )}

@@ -7,51 +7,58 @@ import { FeedbackSidebar } from "./components/feedback/FeedbackSidebar";
 import { Comment } from "./components/feedback/SuggestionCard";
 import { Search, Loader2 } from "lucide-react";
 
-type Message = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-};
+// Unified conversation item - can be a message or a feedback batch
+type ConversationItem = 
+  | { type: 'user'; id: string; content: string }
+  | { type: 'assistant'; id: string; content: string }
+  | { type: 'feedback'; id: string; text: string; comments: Comment[] };
 
 export default function Home() {
   const [content, setContent] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [conversation, setConversation] = useState<ConversationItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
-  const [hasAnalyzed, setHasAnalyzed] = useState(false);
   
-  const [appliedEdits, setAppliedEdits] = useState<string[]>([]);
-  const [dismissedFeedback, setDismissedFeedback] = useState<string[]>([]);
-
   const chatEndRef = useRef<HTMLDivElement>(null);
   const lastContentRef = useRef<string>("");
 
+  // Derive all active comments from the conversation
+  const allComments = conversation
+    .filter((item): item is Extract<ConversationItem, { type: 'feedback' }> => item.type === 'feedback')
+    .flatMap(item => item.comments);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [conversation]);
 
+  // Re-calculate comment positions when document content changes
   useEffect(() => {
-    if (comments.length === 0 || content === lastContentRef.current) return;
+    if (allComments.length === 0 || content === lastContentRef.current) return;
     lastContentRef.current = content;
 
-    const updatedComments = comments
-      .map((c) => {
-        const startIndex = content.indexOf(c.original_text);
-        if (startIndex === -1) return null;
-        const endIndex = startIndex + c.original_text.length;
-        if (c.startIndex === startIndex && c.endIndex === endIndex) return c;
-        return { ...c, startIndex, endIndex };
-      })
-      .filter((c): c is Comment => c !== null);
+    // Update positions of all comments in feedback items
+    setConversation(prev => prev.map(item => {
+      if (item.type !== 'feedback') return item;
+      
+      const updatedComments = item.comments
+        .map((c) => {
+          const startIndex = content.indexOf(c.original_text);
+          if (startIndex === -1) return null;
+          const endIndex = startIndex + c.original_text.length;
+          if (c.startIndex === startIndex && c.endIndex === endIndex) return c;
+          return { ...c, startIndex, endIndex };
+        })
+        .filter((c): c is Comment => c !== null);
+      
+      return { ...item, comments: updatedComments };
+    }));
+  }, [content, allComments.length]);
 
-    setComments(updatedComments);
-  }, [content, comments]);
-
-  const processComments = useCallback((rawComments: any[]) => {
+  const processComments = useCallback((rawComments: any[], assistantText: string) => {
     if (!rawComments || !content) return;
+    
     const processed = rawComments
       .map((c, i) => {
         const startIndex = content.indexOf(c.original_text);
@@ -66,7 +73,14 @@ export default function Home() {
       })
       .filter((c): c is Comment => c !== null);
 
-    setComments(processed);
+    // Add as a feedback conversation item
+    setConversation(prev => [...prev, {
+      type: 'feedback',
+      id: `feedback-${Date.now()}`,
+      text: assistantText || "I've reviewed your document.",
+      comments: processed,
+    }]);
+
     if (processed.length > 0) setActiveCommentId(processed[0].id);
   }, [content]);
 
@@ -75,29 +89,43 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
 
+    // Add user message to conversation (unless it's the initial analyze)
     if (!isAnalyze) {
-      setMessages((prev) => [...prev, { id: `msg-${Date.now()}`, role: "user", content: messageContent }]);
+      setConversation(prev => [...prev, { type: 'user', id: `user-${Date.now()}`, content: messageContent }]);
     }
 
     try {
+      // Build messages array for the API from conversation
+      const apiMessages = conversation
+        .filter(item => item.type === 'user' || item.type === 'assistant')
+        .map(item => ({ role: item.type as 'user' | 'assistant', content: (item as any).content }));
+      
+      if (!isAnalyze) {
+        apiMessages.push({ role: 'user', content: messageContent });
+      }
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: isAnalyze ? [{ role: "user", content: messageContent }] : [...messages, { role: "user", content: messageContent }],
+          messages: isAnalyze ? [{ role: "user", content: messageContent }] : apiMessages,
           document: content,
-          context: { pendingComments: comments.map((c) => c.comment), appliedEdits, dismissedFeedback },
+          context: { 
+            pendingComments: allComments.map((c) => c.comment)
+          },
         }),
       });
 
       if (!response.ok) throw new Error("Failed to get response");
       const data = await response.json();
 
-      if (!isAnalyze && data.text) {
-        setMessages((prev) => [...prev, { id: `msg-${Date.now() + 1}`, role: "assistant", content: data.text }]);
+      // If we got comments, add as feedback item
+      if (data.comments && data.comments.length > 0) {
+        processComments(data.comments, data.text);
+      } else if (data.text) {
+        // Text-only response
+        setConversation(prev => [...prev, { type: 'assistant', id: `assistant-${Date.now()}`, content: data.text }]);
       }
-      if (data.comments) processComments(data.comments);
-      if (isAnalyze) setHasAnalyzed(true);
     } catch (err) {
       setError("Analysis failed. Please try again.");
     } finally {
@@ -109,63 +137,78 @@ export default function Home() {
     if (!comment.suggestion) return;
     const newContent = content.substring(0, comment.startIndex) + comment.suggestion + content.substring(comment.endIndex);
     setContent(newContent);
-    setComments(prev => prev.filter(c => c.id !== comment.id));
+    
+    // Remove comment from the feedback item it belongs to
+    setConversation(prev => prev.map(item => {
+      if (item.type !== 'feedback') return item;
+      return { ...item, comments: item.comments.filter(c => c.id !== comment.id) };
+    }));
+  };
+
+  const dismissComment = (commentId: string) => {
+    setConversation(prev => prev.map(item => {
+      if (item.type !== 'feedback') return item;
+      return { ...item, comments: item.comments.filter(c => c.id !== commentId) };
+    }));
   };
 
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
-  const highlightRanges = comments.map(c => ({ 
+  const highlightRanges = allComments.map(c => ({ 
     start: c.startIndex, 
     end: c.endIndex, 
     id: c.id,
     category: c.category
   }));
 
+  const showSidebar = conversation.length > 0;
+
   return (
-    <div className="min-h-screen bg-white text-stone-900 font-sans selection:bg-stone-200">
+    <div className="min-h-screen bg-[#f9fbfd] text-stone-900 font-sans selection:bg-stone-200">
       <Header 
         wordCount={wordCount} 
-        suggestionsCount={comments.length} 
-        hasAnalyzed={hasAnalyzed} 
+        suggestionsCount={allComments.length} 
+        hasAnalyzed={showSidebar} 
       />
 
       <div className="pt-14 h-screen flex">
-        <main className="flex-1 overflow-y-auto bg-stone-50/30">
-          <div className="max-w-3xl mx-auto px-6 py-12">
-            <Editor
-              content={content}
-              setContent={setContent}
-              highlightRanges={highlightRanges}
-              activeCommentId={activeCommentId}
-              onCommentClick={setActiveCommentId}
-            />
-
-            {!hasAnalyzed && content.trim() && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  onClick={() => sendMessage("Analyze document", true)}
-                  disabled={isLoading}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-stone-900 text-white text-xs font-bold uppercase tracking-widest rounded shadow-sm hover:bg-stone-800 transition-all disabled:opacity-50"
-                >
-                  {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-                  Run analysis
-                </button>
-              </div>
-            )}
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
+            <div className="w-full max-w-[850px] min-h-[1100px] bg-white page-shadow p-16 sm:p-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <Editor
+                content={content}
+                setContent={setContent}
+                highlightRanges={highlightRanges}
+                activeCommentId={activeCommentId}
+                onCommentClick={setActiveCommentId}
+              />
+            </div>
           </div>
+
+          {!showSidebar && content.trim() && (
+            <div className="pb-24 flex justify-center">
+              <button
+                onClick={() => sendMessage("Please review my document and provide feedback.", true)}
+                disabled={isLoading}
+                className="flex items-center gap-2 px-8 py-3 bg-stone-900 text-white text-sm font-bold rounded-full shadow-xl hover:bg-stone-800 hover:scale-105 transition-all active:scale-95 disabled:opacity-50"
+              >
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                Analyze writing
+              </button>
+            </div>
+          )}
         </main>
 
         <div className={`transition-all duration-300 ease-in-out border-l border-stone-200
-          ${hasAnalyzed ? 'w-[400px]' : 'w-0 overflow-hidden opacity-0'}
+          ${showSidebar ? 'w-[400px]' : 'w-0 overflow-hidden opacity-0'}
         `}>
           <FeedbackSidebar
-            comments={comments}
+            conversation={conversation}
             activeCommentId={activeCommentId}
-            onCommentClick={(c) => setActiveCommentId(c.id)}
+            onCommentClick={setActiveCommentId}
             onApply={applyEdit}
-            onDismiss={(id) => setComments(prev => prev.filter(c => c.id !== id))}
-            onRefresh={() => sendMessage("Analyze document", true)}
+            onDismiss={dismissComment}
+            onRefresh={() => sendMessage("Please review my document again.", true)}
             isLoading={isLoading}
-            messages={messages}
             chatInput={chatInput}
             setChatInput={setChatInput}
             onChatSubmit={(e) => { e.preventDefault(); sendMessage(chatInput); setChatInput(""); }}

@@ -28,26 +28,25 @@ export const Editor: React.FC<EditorProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  const handleScroll = () => {
-    if (textareaRef.current && highlightRef.current) {
-      highlightRef.current.scrollTop = textareaRef.current.scrollTop;
-    }
-  };
-
+  // Auto-resize textarea to fit content
   useEffect(() => {
-    handleScroll();
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
   }, [content]);
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto">
-      <div className="min-h-[80vh] relative">
+    <div className="relative w-full h-full">
+      <div className="relative min-h-[800px]">
         {/* Underline layer */}
         <div
           ref={highlightRef}
           className="absolute inset-0 whitespace-pre-wrap overflow-hidden pointer-events-none text-transparent"
           style={{
             fontFamily: 'var(--font-serif, serif)',
-            fontSize: '22px',
+            fontSize: '21px',
             lineHeight: '1.8',
             wordBreak: 'break-word',
           }}
@@ -97,14 +96,14 @@ export const Editor: React.FC<EditorProps> = ({
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          onScroll={handleScroll}
-          placeholder="Start typing..."
-          className="relative w-full min-h-[80vh] bg-transparent text-stone-900 resize-none outline-none placeholder:text-stone-300 p-0 border-none focus:ring-0"
+          placeholder="Start writing your story..."
+          className="relative w-full bg-transparent text-[#1a1a1a] resize-none outline-none placeholder:text-stone-300 p-0 border-none focus:ring-0 overflow-hidden"
           style={{
             fontFamily: 'var(--font-serif, serif)',
-            fontSize: '22px',
+            fontSize: '21px',
             lineHeight: '1.8',
             wordBreak: 'break-word',
+            minHeight: '800px'
           }}
         />
       </div>
