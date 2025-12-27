@@ -4,16 +4,14 @@ import { useState, useRef, useEffect } from "react";
 
 type Comment = {
   id: string;
-  start_phrase: string;
-  end_phrase: string;
+  original_text: string;
+  comment: string;
+  suggestion: string | null;
   kind: "insert" | "rewrite" | "praise";
   category: "thesis" | "structure" | "clarity" | "logic" | "transitions" | "examples" | "tone" | "style" | "consistency" | "grammar";
   impact: "low" | "medium" | "high";
-  feedback: string;
-  suggested_edit: string | null;
   startIndex: number;
   endIndex: number;
-  originalText?: string | null;
 };
 
 type Message = {
@@ -38,10 +36,12 @@ export default function Home() {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lastContentRef = useRef<string>("");
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
 
   // Debug: log when comments change
   useEffect(() => {
@@ -51,75 +51,75 @@ export default function Home() {
     });
   }, [comments]);
 
-  // Simple text matching - find a phrase in the document
-  const findPhrase = (phrase: string, doc: string): number => {
-    if (!phrase || !doc) return -1;
-    
-    // Try exact match first
-    const exactIndex = doc.indexOf(phrase);
-    if (exactIndex !== -1) return exactIndex;
-    
-    // Try case-insensitive match
-    const lowerDoc = doc.toLowerCase();
-    const lowerPhrase = phrase.toLowerCase();
-    const caseInsensitiveIndex = lowerDoc.indexOf(lowerPhrase);
-    if (caseInsensitiveIndex !== -1) return caseInsensitiveIndex;
-    
-    // Try matching first few words (in case LLM truncated or modified)
-    const words = phrase.split(/\s+/).slice(0, 5).join(' ');
-    if (words.length > 10) {
-      const wordsIndex = lowerDoc.indexOf(words.toLowerCase());
-      if (wordsIndex !== -1) return wordsIndex;
-    }
-    
-    return -1;
-  };
+  // Re-calculate comment positions when content changes
+  useEffect(() => {
+    if (comments.length === 0 || content === lastContentRef.current) return;
+
+    console.log("[ContentChange] Content changed, re-calculating", comments.length, "comment positions");
+    lastContentRef.current = content;
+
+    const updatedComments = comments
+      .map((c) => {
+        const startIndex = content.indexOf(c.original_text);
+        if (startIndex === -1) {
+          console.warn("[ContentChange] ⚠️ Could not find text:", c.original_text.substring(0, 50));
+          return null; // Comment text no longer exists in document
+        }
+        const endIndex = startIndex + c.original_text.length;
+
+        // Only return updated if position changed
+        if (c.startIndex === startIndex && c.endIndex === endIndex) {
+          return c; // No change
+        }
+
+        return { ...c, startIndex, endIndex };
+      })
+      .filter((c): c is Comment => c !== null);
+
+    setComments(updatedComments);
+  }, [content, comments]); // Need both dependencies
 
   const processComments = (rawComments: any[]) => {
+    console.log("[processComments] ====== PROCESSING COMMENTS ======");
     console.log("[processComments] Received", rawComments?.length, "comments");
     console.log("[processComments] Content length:", content?.length);
-    
+
     if (!rawComments || !content) {
       console.log("[processComments] No comments or no content");
       return;
     }
-    
-    const processed = rawComments.map((c, i) => {
-      // Find start position
-      const startIndex = findPhrase(c.start_phrase, content);
-      
-      // Calculate end based on the phrases
-      let endIndex = -1;
-      if (startIndex !== -1) {
-        if (c.start_phrase === c.end_phrase) {
-          // Same phrase - highlight just that phrase
-          endIndex = startIndex + c.start_phrase.length;
-        } else if (c.end_phrase) {
-          // Different end phrase - find it after start
-          const endPhraseStart = content.indexOf(c.end_phrase, startIndex);
-          if (endPhraseStart !== -1) {
-            endIndex = endPhraseStart + c.end_phrase.length;
-          } else {
-            // End phrase not found - use a reasonable chunk after start
-            endIndex = Math.min(startIndex + c.start_phrase.length, content.length);
-          }
-        } else {
-          endIndex = startIndex + c.start_phrase.length;
-        }
-      }
-      
-      console.log(`[processComments] Comment ${i}: "${c.start_phrase?.substring(0, 25)}..." → found at ${startIndex}-${endIndex}`);
-      
-      return {
-        ...c,
-        id: `comment-${Date.now()}-${i}`,
-        startIndex,
-        endIndex,
-        originalText: startIndex >= 0 && endIndex > startIndex ? content.substring(startIndex, endIndex) : null,
-      };
-    });
 
-    console.log("[processComments] Processed", processed.length, "comments,", processed.filter(c => c.startIndex >= 0).length, "with positions");
+    const processed = rawComments
+      .map((c, i) => {
+        console.log(`[processComments] ===== Comment ${i} =====`);
+        console.log(`[processComments] Raw from LLM:`, c);
+        console.log(`[processComments] Looking for text: "${c.original_text}"`);
+
+        // Find exact match
+        const startIndex = content.indexOf(c.original_text);
+
+        if (startIndex === -1) {
+          console.warn(`[processComments] ⚠️ Could not find exact match for: "${c.original_text}"`);
+          // TODO: Add fuzzy matching fallback
+          return null;
+        }
+
+        const endIndex = startIndex + c.original_text.length;
+
+        console.log(`[processComments] ✓ Found at indices: ${startIndex}-${endIndex}`);
+        console.log(`[processComments] Matched text: "${content.substring(startIndex, endIndex)}"`);
+        console.log(`[processComments] ========================`);
+
+        return {
+          ...c,
+          id: `comment-${Date.now()}-${i}`,
+          startIndex,
+          endIndex,
+        };
+      })
+      .filter((c): c is Comment => c !== null);
+
+    console.log("[processComments] Successfully processed", processed.length, "comments");
     setComments(processed);
     if (processed.length > 0) setActiveCommentId(processed[0].id);
   };
@@ -146,7 +146,7 @@ export default function Home() {
             : [...validMessages, { role: "user", content: messageContent }],
           document: content,
           context: {
-            pendingComments: comments.map((c) => c.feedback),
+            pendingComments: comments.map((c) => c.comment),
             appliedEdits,
             dismissedFeedback,
           },
@@ -203,49 +203,50 @@ export default function Home() {
 
   const applyEdit = (comment: Comment) => {
     // Validate we have a suggested edit and valid positions
-    if (!comment.suggested_edit) {
-      console.log("[applyEdit] No suggested_edit for comment:", comment.id);
+    if (!comment.suggestion) {
+      console.log("[applyEdit] No suggestion for comment:", comment.id);
       return;
     }
-    
-    if (comment.startIndex < 0 || comment.endIndex <= comment.startIndex) {
-      console.log("[applyEdit] Invalid position for comment:", comment.id, comment.startIndex, comment.endIndex);
-      // If we have originalText stored, try to find and replace it
-      if (comment.originalText) {
-        const idx = content.indexOf(comment.originalText);
-        if (idx !== -1) {
-          const newContent = content.substring(0, idx) + comment.suggested_edit + content.substring(idx + comment.originalText.length);
-          setContent(newContent);
-          console.log("[applyEdit] Applied via originalText match");
-        }
-      }
-      setComments((prev) => prev.filter((c) => c.id !== comment.id));
-      return;
-    }
-    
+
     // Apply the edit
     const before = content.substring(0, comment.startIndex);
     const after = content.substring(comment.endIndex);
-    const newContent = before + comment.suggested_edit + after;
-    
+    const newContent = before + comment.suggestion + after;
+
     console.log("[applyEdit] Replacing:", content.substring(comment.startIndex, comment.endIndex));
-    console.log("[applyEdit] With:", comment.suggested_edit);
-    
+    console.log("[applyEdit] With:", comment.suggestion);
+
     setContent(newContent);
-    
+
     // Track applied edit
-    setAppliedEdits((prev) => [...prev, `Applied: "${comment.feedback}"`]);
-    
-    // Remove this comment and activate next
-    setComments((prev) => prev.filter((c) => c.id !== comment.id));
-    const remaining = comments.filter((c) => c.id !== comment.id);
-    setActiveCommentId(remaining.length > 0 ? remaining[0].id : null);
+    setAppliedEdits((prev) => [...prev, `Applied: "${comment.comment}"`]);
+
+    // Remove this comment
+    const remainingComments = comments.filter((c) => c.id !== comment.id);
+
+    // Re-calculate positions for remaining comments based on new content
+    console.log("[applyEdit] Re-calculating positions for", remainingComments.length, "remaining comments");
+    const updatedComments = remainingComments
+      .map((c) => {
+        const startIndex = newContent.indexOf(c.original_text);
+        if (startIndex === -1) {
+          console.warn("[applyEdit] ⚠️ Could not find text after edit:", c.original_text);
+          return null;
+        }
+        const endIndex = startIndex + c.original_text.length;
+        console.log(`[applyEdit] Updated comment "${c.comment}" → indices ${startIndex}-${endIndex}`);
+        return { ...c, startIndex, endIndex };
+      })
+      .filter((c): c is Comment => c !== null);
+
+    setComments(updatedComments);
+    setActiveCommentId(updatedComments.length > 0 ? updatedComments[0].id : null);
   };
 
   const dismissComment = (commentId: string) => {
     const comment = comments.find((c) => c.id === commentId);
     if (comment) {
-      setDismissedFeedback((prev) => [...prev, `Dismissed: "${comment.feedback}"`]);
+      setDismissedFeedback((prev) => [...prev, `Dismissed: "${comment.comment}"`]);
     }
     setComments((prev) => prev.filter((c) => c.id !== commentId));
     const remaining = comments.filter((c) => c.id !== commentId);
@@ -262,8 +263,6 @@ export default function Home() {
 
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
 
-  const lines = content.split('\n');
-
   // Build highlight ranges
   const highlightRanges = comments
     .filter(c => c.startIndex >= 0 && c.endIndex > c.startIndex)
@@ -277,35 +276,47 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Simple header */}
-      <header className="fixed top-0 left-0 right-0 h-14 z-40 flex items-center px-6 bg-white/80 backdrop-blur-sm">
-        <h1 className="text-lg font-semibold text-stone-800">WriteGuide</h1>
-        <div className="flex-1" />
-        {wordCount > 0 && <span className="text-sm text-stone-400">{wordCount} words</span>}
+    <div className="min-h-screen bg-stone-50">
+      {/* Modern header */}
+      <header className="fixed top-0 left-0 right-0 h-16 z-40 flex items-center justify-between px-8 bg-white/90 backdrop-blur-xl border-b border-stone-200">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <span className="text-white text-sm font-bold">W</span>
+          </div>
+          <h1 className="text-xl font-bold text-stone-900">WriteGuide</h1>
+        </div>
+        <div className="flex items-center gap-6">
+          {wordCount > 0 && (
+            <span className="text-sm text-stone-500 font-medium">{wordCount} words</span>
+          )}
+          {comments.length > 0 && (
+            <span className="text-sm text-indigo-600 font-medium">{comments.length} suggestions</span>
+          )}
+        </div>
       </header>
 
       {error && (
-        <div className="fixed top-14 left-0 right-0 px-6 py-3 bg-red-50 text-red-600 text-sm z-30">
+        <div className="fixed top-16 left-0 right-0 px-8 py-4 bg-red-50 text-red-700 border-b border-red-200 text-sm z-30">
           {error}
         </div>
       )}
 
-      <div className="flex pt-14">
-        {/* Main editor */}
-        <main className={`flex-1 transition-all ${hasAnalyzed ? 'mr-80' : ''}`}>
-          <div className="max-w-3xl mx-auto px-6 py-12">
-            {/* Editor container - uses a backdrop for highlights */}
+      <div className="pt-16">
+        {/* Main editor - centered, shifts when sidebar opens */}
+        <main className={`max-w-4xl mx-auto px-8 py-12 transition-all duration-300 ${hasAnalyzed ? 'mr-96' : ''}`}>
+          {/* Writing surface */}
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-12 min-h-[70vh]">
             <div className="relative">
-              {/* Highlight backdrop - exactly matches textarea */}
-              <div 
-                className="absolute inset-0 whitespace-pre-wrap overflow-hidden pointer-events-none"
-                style={{ 
+              {/* Underline layer for highlights */}
+              <div
+                className="absolute inset-0 whitespace-pre-wrap overflow-hidden"
+                style={{
                   fontFamily: 'Georgia, serif',
-                  fontSize: '18px',
-                  lineHeight: '1.75',
+                  fontSize: '19px',
+                  lineHeight: '1.8',
                   wordBreak: 'break-word',
-                  padding: '0'
+                  padding: '0',
+                  pointerEvents: 'none'
                 }}
                 aria-hidden="true"
               >
@@ -313,10 +324,10 @@ export default function Home() {
                   if (highlightRanges.length === 0) {
                     return <span className="invisible">{content || ' '}</span>;
                   }
-                  
+
                   const parts: React.ReactNode[] = [];
                   let lastEnd = 0;
-                  
+
                   highlightRanges.forEach((range, i) => {
                     // Text before highlight (invisible)
                     if (range.start > lastEnd) {
@@ -326,20 +337,29 @@ export default function Home() {
                         </span>
                       );
                     }
-                    // Highlighted text (visible background, invisible text)
+                    // Underlined text
                     const isActive = activeCommentId === range.id;
                     parts.push(
-                      <mark 
-                        key={`h-${i}`} 
-                        className={`${isActive ? "bg-amber-300" : "bg-amber-200"} rounded-sm`}
-                        style={{ color: 'transparent' }}
+                      <mark
+                        key={`h-${i}`}
+                        onClick={() => {
+                          const comment = comments.find(c => c.id === range.id);
+                          if (comment) handleCommentClick(comment);
+                        }}
+                        className={`
+                          ${isActive ? "bg-amber-100 decoration-amber-500" : "bg-transparent decoration-indigo-400"}
+                          underline decoration-wavy decoration-2 underline-offset-4
+                          cursor-pointer transition-all duration-200
+                          hover:bg-indigo-50
+                        `}
+                        style={{ color: 'transparent', pointerEvents: 'auto' }}
                       >
                         {content.substring(range.start, range.end)}
                       </mark>
                     );
                     lastEnd = range.end;
                   });
-                  
+
                   // Remaining text (invisible)
                   if (lastEnd < content.length) {
                     parts.push(
@@ -352,52 +372,70 @@ export default function Home() {
                 })()}
               </div>
 
-              {/* Textarea - on top of highlights */}
+              {/* Textarea */}
               <textarea
                 ref={textareaRef}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Start writing or paste your text here..."
-                className="relative w-full min-h-[60vh] bg-transparent text-stone-800 resize-none outline-none placeholder:text-stone-300 p-0"
-                style={{ 
+                className="relative w-full min-h-[60vh] bg-transparent text-stone-900 resize-none outline-none placeholder:text-stone-400 p-0"
+                style={{
                   fontFamily: 'Georgia, serif',
-                  fontSize: '18px',
-                  lineHeight: '1.75',
+                  fontSize: '19px',
+                  lineHeight: '1.8',
                   wordBreak: 'break-word'
                 }}
               />
             </div>
-
-            {/* Analyze button */}
-            {!hasAnalyzed && content.trim() && (
-              <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <button
-                  onClick={handleAnalyze}
-                  disabled={isLoading}
-                  className="px-6 py-2.5 bg-stone-900 text-white rounded-full text-sm font-medium hover:bg-stone-800 disabled:opacity-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                >
-                  {isLoading ? "Analyzing..." : "Get Feedback"}
-                </button>
-              </div>
-            )}
           </div>
+
+          {/* Analyze button */}
+          {!hasAnalyzed && content.trim() && (
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={handleAnalyze}
+                disabled={isLoading}
+                className="px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl text-base font-semibold hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 transition-all duration-200"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Analyzing...
+                  </span>
+                ) : (
+                  "✨ Get Feedback"
+                )}
+              </button>
+            </div>
+          )}
         </main>
 
-        {/* Right sidebar */}
+        {/* Right sidebar - comments */}
         {hasAnalyzed && (
-          <aside className="fixed right-0 top-14 bottom-0 w-80 bg-white border-l border-stone-200 flex flex-col">
+          <aside className="fixed right-0 top-16 bottom-0 w-96 bg-white border-l border-stone-200 flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="px-5 py-4 border-b border-stone-100">
+            <div className="px-6 py-5 border-b border-stone-200 bg-stone-50">
               <div className="flex items-center justify-between">
-                <h2 className="font-medium text-stone-800">
-                  {comments.length > 0 ? `${comments.length} Suggestions` : "Feedback"}
-                </h2>
+                <div>
+                  <h2 className="font-bold text-stone-900 text-lg">
+                    Suggestions
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    {comments.length} {comments.length === 1 ? 'item' : 'items'}
+                  </p>
+                </div>
                 <button
                   onClick={handleAnalyze}
                   disabled={isLoading}
-                  className="text-xs text-stone-400 hover:text-stone-600"
+                  className="p-2 text-stone-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                  title="Refresh"
                 >
-                  {isLoading ? "..." : "Refresh"}
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -405,56 +443,95 @@ export default function Home() {
             {/* Comments list */}
             <div className="flex-1 overflow-y-auto">
               {comments.length > 0 ? (
-                <div className="p-4 space-y-3">
+                <div className="p-6 space-y-4">
                   {comments.map((comment) => (
                     <div
                       key={comment.id}
                       onClick={() => handleCommentClick(comment)}
-                      className={`p-4 rounded-xl cursor-pointer transition-all ${
+                      className={`group rounded-xl border-2 transition-all cursor-pointer ${
                         activeCommentId === comment.id
-                          ? "bg-amber-50 ring-1 ring-amber-200"
-                          : "bg-stone-50 hover:bg-stone-100"
+                          ? "border-indigo-400 bg-indigo-50/50 shadow-md"
+                          : "border-stone-200 bg-white hover:border-indigo-200 hover:shadow-sm"
                       }`}
                     >
-                      <p className="text-sm text-stone-700 leading-relaxed">{comment.feedback}</p>
-                      
-                      {comment.suggested_edit && (
-                        <div className="mt-3 pt-3 border-t border-stone-200">
-                          <p className="text-xs text-stone-400 mb-2">Suggested:</p>
-                          <p className="text-sm text-stone-600 italic">{comment.suggested_edit}</p>
-                          <div className="mt-3 flex gap-2">
+                      <div className="p-5">
+                        {/* Category badge */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            comment.impact === 'high' ? 'bg-red-100 text-red-700' :
+                            comment.impact === 'medium' ? 'bg-amber-100 text-amber-700' :
+                            'bg-stone-100 text-stone-600'
+                          }`}>
+                            {comment.category}
+                          </span>
+                          <span className="text-xs text-stone-400">•</span>
+                          <span className="text-xs text-stone-500 capitalize">{comment.kind}</span>
+                        </div>
+
+                        {/* Original text quote */}
+                        <div className="mb-3 pl-3 border-l-3 border-stone-300">
+                          <p className="text-xs text-stone-600 italic line-clamp-2">
+                            "{comment.original_text}"
+                          </p>
+                        </div>
+
+                        {/* Comment */}
+                        <p className="text-sm text-stone-700 leading-relaxed font-medium mb-3">
+                          {comment.comment}
+                        </p>
+
+                        {/* Suggestion */}
+                        {comment.suggestion && (
+                          <div className="mt-4 p-3 bg-stone-50 rounded-lg border border-stone-200">
+                            <p className="text-xs text-stone-500 font-medium mb-2">Suggested revision:</p>
+                            <p className="text-sm text-stone-800 leading-relaxed">
+                              {comment.suggestion}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="mt-4 flex gap-2">
+                          {comment.suggestion && (
                             <button
                               onClick={(e) => { e.stopPropagation(); applyEdit(comment); }}
-                              className="px-3 py-1.5 text-xs font-medium bg-stone-900 text-white rounded-full hover:bg-stone-800"
+                              className="flex-1 px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                             >
                               Apply
                             </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); dismissComment(comment.id); }}
-                              className="px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700"
-                            >
-                              Dismiss
-                            </button>
-                          </div>
+                          )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); dismissComment(comment.id); }}
+                            className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-colors"
+                          >
+                            Dismiss
+                          </button>
                         </div>
-                      )}
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full text-stone-400 text-sm">
-                  All done! 🎉
+                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <span className="text-3xl">🎉</span>
+                  </div>
+                  <p className="text-stone-900 font-semibold mb-1">All done!</p>
+                  <p className="text-stone-500 text-sm">No suggestions remaining</p>
                 </div>
               )}
             </div>
 
             {/* Chat input */}
-            <div className="border-t border-stone-100 p-4">
+            <div className="border-t border-stone-200 p-5 bg-white">
               {messages.length > 0 && (
-                <div className="mb-3 max-h-32 overflow-y-auto space-y-2">
+                <div className="mb-4 max-h-32 overflow-y-auto space-y-2">
                   {messages.map((msg) => (
                     <div key={msg.id} className={`text-sm ${msg.role === "user" ? "text-stone-600" : "text-stone-800"}`}>
-                      {msg.role === "user" ? "You: " : ""}{msg.content}
+                      <span className="font-semibold mr-2 text-xs uppercase text-stone-400">
+                        {msg.role === "user" ? "You" : "AI"}
+                      </span>
+                      {msg.content}
                     </div>
                   ))}
                   <div ref={chatEndRef} />
@@ -466,7 +543,7 @@ export default function Home() {
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Ask a question..."
-                  className="w-full px-4 py-2.5 bg-stone-50 rounded-full text-sm outline-none placeholder:text-stone-400 focus:ring-1 focus:ring-stone-200"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-300 rounded-lg text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
                   disabled={isLoading}
                 />
               </form>
