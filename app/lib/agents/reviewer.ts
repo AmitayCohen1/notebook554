@@ -3,10 +3,10 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 
 const CommentSchema = z.object({
-  original_text: z.string().describe("The EXACT text from the document you're commenting on. Copy it precisely - this is how we'll find and highlight it."),
-  comment: z.string().describe("Brief, actionable description of the issue or feedback (1-2 sentences)"),
-  suggestion: z.string().nullable().describe("For 'rewrite', provide the replacement text. For 'insert', provide the text to add. For 'praise', leave null."),
-  kind: z.enum(["insert", "rewrite", "praise"]).describe("The type of feedback: 'insert' to add new content, 'rewrite' to change existing text, 'praise' for positive feedback"),
+  original_text: z.string().describe("The EXACT text from the document. Copy it precisely—this is how we highlight it."),
+  comment: z.string().describe("One sentence explaining the issue. Be direct."),
+  suggestion: z.string().nullable().describe("REQUIRED for 'insert'/'rewrite': the exact replacement or addition text. Only null for 'praise'."),
+  kind: z.enum(["insert", "rewrite", "praise"]).describe("'insert' = add text, 'rewrite' = replace text, 'praise' = compliment (no suggestion needed)"),
   category: z.enum(["thesis", "structure", "clarity", "logic", "transitions", "examples", "tone", "style", "consistency", "grammar"]),
   impact: z.enum(["low", "medium", "high"]),
 });
@@ -33,25 +33,25 @@ export async function generateComments(document: string, focus?: string) {
           comments: z.array(CommentSchema),
         }),
       }),
-      system: `You are an expert writing coach. Generate inline comments for the document.
-${focus ? `Focus on: ${focus.toUpperCase()}` : ""}
+      system: `You are a precise writing editor. Generate inline comments.
+${focus ? `Focus: ${focus.toUpperCase()}` : ""}
 
-CRITICAL RULES:
-1. For 'original_text': Copy the EXACT text from the document you're commenting on. This must match PRECISELY - it's how we find and highlight it.
-2. For 'suggestion': Provide the COMPLETE replacement text (for rewrites) or new text to add (for inserts).
-3. Keep 'original_text' focused - usually 1-3 sentences. Don't copy huge chunks.
-4. Be concise and actionable.
+RULES:
+1. 'original_text' must be EXACT text from the document (1-2 sentences max).
+2. 'comment' must be ONE concise sentence explaining the issue.
+3. 'suggestion' is REQUIRED for 'insert' and 'rewrite'—provide the exact text to add or replace. Only 'praise' can have null suggestion.
+4. Be specific. No vague advice. Every rewrite/insert must have concrete replacement text.
 
-YOU MUST ONLY USE THESE 3 ACTIONS:
-- insert: elaborate, add data, or add missing content (original_text = text BEFORE where you want to insert)
-- rewrite: rephrase, clarify, or fix existing text (original_text = text to replace)
-- praise: compliment good writing (suggestion can be null)`,
+ACTIONS:
+- insert: Add missing content. 'suggestion' = text to add. 'original_text' = text before insertion point.
+- rewrite: Fix or improve text. 'suggestion' = replacement text. 'original_text' = text to replace.
+- praise: Compliment strong writing. 'suggestion' = null.`,
       prompt: `Document:
 """
 ${document}
 """
 
-Generate 3-5 specific, actionable comments using only 'insert', 'rewrite', or 'praise'. For each comment, include the EXACT text you're referring to in 'original_text'.`,
+Generate 3-5 specific comments. Every 'insert' or 'rewrite' MUST include a concrete 'suggestion' with the exact text to use.`,
     });
 
     console.log("[reviewer] ====== RECEIVED FROM LLM ======");

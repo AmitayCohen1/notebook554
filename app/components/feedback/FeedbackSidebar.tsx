@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import ReactMarkdown from "react-markdown";
 import { SuggestionCard, Comment } from "./SuggestionCard";
 import { Send, RotateCcw, MessageCircle, Sparkles } from "lucide-react";
 
@@ -82,8 +83,20 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
                     <div className="w-7 h-7 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                       AI
                     </div>
-                    <div className="flex-1 pt-1">
-                      <p className="text-[13px] text-stone-700 leading-relaxed whitespace-pre-wrap">{item.content}</p>
+                    <div className="flex-1 pt-1 prose prose-sm prose-stone max-w-none">
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="text-[13px] text-stone-700 leading-relaxed mb-2 last:mb-0">{children}</p>,
+                          strong: ({ children }) => <strong className="font-semibold text-stone-900">{children}</strong>,
+                          em: ({ children }) => <em className="italic">{children}</em>,
+                          ul: ({ children }) => <ul className="text-[13px] text-stone-700 list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="text-[13px] text-stone-700 list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                          code: ({ children }) => <code className="text-[12px] bg-stone-100 px-1 py-0.5 rounded font-mono">{children}</code>,
+                        }}
+                      >
+                        {item.content}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 </div>
@@ -103,7 +116,7 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
                         <p className="text-[13px] text-stone-700 leading-relaxed">{item.text}</p>
                         {item.comments.length > 0 && (
                           <p className="text-[11px] text-stone-400 mt-1">
-                            {item.comments.length} suggestion{item.comments.length !== 1 ? 's' : ''} added
+                            {item.comments.length} suggestion{item.comments.length !== 1 ? 's' : ''}
                           </p>
                         )}
                       </div>
