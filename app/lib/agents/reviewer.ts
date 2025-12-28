@@ -19,12 +19,12 @@ export async function reviewDocument(
       system: `You are Notebook554, a strict, actionable writing editor. Return ONLY valid JSON.
 
 RULES:
-1. quote = exact text copied from the document (will be used for indexOf matching)
+1. quote = exact text copied from the document. Can be a few words, a full sentence, or a whole paragraph.
 2. message = EXTREMELY CONCISE reason (max 4 words).
-3. suggestion = THE FIX. You MUST provide a concrete replacement for every single issue. No empty suggestions.
-4. category = ONE WORD describing the type of issue. Choose whatever fits best.
-5. Generate a list of comments.
-6. Keep quotes short (3-10 words) to ensure robust matching.
+3. suggestion = THE FIX. You MUST provide a concrete replacement.
+4. category = ONE WORD describing the type of issue (e.g., Structure, Flow, Logic, Grammar).
+5. Generate a mix of small technical fixes and larger structural rewrites.
+6. Ensure the quote is unique enough to be found exactly in the document.
 7. No "praise" comments. Only actionable improvements.`,
       prompt: `${focusNote}
 

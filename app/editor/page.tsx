@@ -11,10 +11,10 @@ import { Comment } from "../components/feedback/SuggestionCard";
 import { PanelRight, PanelRightClose } from "lucide-react";
 import { saveDocument } from "../lib/actions";
 
-type ConversationItem = 
-  | { type: 'user'; id: string; content: string }
-  | { type: 'assistant'; id: string; content: string }
-  | { type: 'feedback'; id: string; text: string; comments: Comment[] };
+type ConversationItem =
+  | { type: "user"; id: string; content: string }
+  | { type: "assistant"; id: string; content: string }
+  | { type: "feedback"; id: string; text: string; comments: Comment[] };
 
 export default function Home() {
   const { user, isLoaded } = useUser();
@@ -26,8 +26,7 @@ export default function Home() {
   const [chatInput, setChatInput] = useState("");
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"sidebar" | "inline">("inline");
-  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
-  
+
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-save logic
@@ -37,7 +36,8 @@ export default function Home() {
     const timer = setTimeout(async () => {
       setIsSaving(true);
       try {
-        const title = content.split('\n')[0].substring(0, 50) || "Untitled Document";
+        const title =
+          content.split("\n")[0].substring(0, 50) || "Untitled Document";
         await saveDocument(content, title, documentId || undefined);
         track("document_auto_save", { wordCount: content.split(/\s+/).length });
       } catch (err) {
@@ -51,10 +51,13 @@ export default function Home() {
   }, [content, user, documentId]);
 
   const allComments = conversation
-    .filter((item): item is Extract<ConversationItem, { type: 'feedback' }> => item.type === 'feedback')
-    .flatMap(item => item.comments);
+    .filter(
+      (item): item is Extract<ConversationItem, { type: "feedback" }> =>
+        item.type === "feedback"
+    )
+    .flatMap((item) => item.comments);
 
-  const activeComment = allComments.find(c => c.id === activeCommentId);
+  const activeComment = allComments.find((c) => c.id === activeCommentId);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -64,10 +67,10 @@ export default function Home() {
   useEffect(() => {
     if (allComments.length === 0) return;
 
-    setConversation(prev => {
+    setConversation((prev) => {
       const usedInThisPass = new Set<number>();
-      return prev.map(item => {
-        if (item.type !== 'feedback') return item;
+      return prev.map((item) => {
+        if (item.type !== "feedback") return item;
         const updatedComments = item.comments.map((c) => {
           let foundIdx = -1;
           let searchIdx = 0;
@@ -82,7 +85,11 @@ export default function Home() {
             searchIdx = idx + 1;
           }
           if (foundIdx !== -1) {
-            return { ...c, startIndex: foundIdx, endIndex: foundIdx + c.quote.length };
+            return {
+              ...c,
+              startIndex: foundIdx,
+              endIndex: foundIdx + c.quote.length,
+            };
           }
           return { ...c, startIndex: -1, endIndex: -1 };
         });
@@ -91,76 +98,93 @@ export default function Home() {
     });
   }, [content]);
 
-  const processComments = useCallback((rawComments: any[], assistantText: string) => {
-    if (!rawComments || !content) return;
-    const usedIndices = new Set<number>();
-    const processed = rawComments
-      .map((c, i) => {
-        const quote = c.quote;
-        let searchIdx = 0;
-        let foundIdx = -1;
-        while (true) {
-          const idx = content.indexOf(quote, searchIdx);
-          if (idx === -1) break;
-          if (!usedIndices.has(idx)) {
-            foundIdx = idx;
-            usedIndices.add(idx);
-            break;
+  const processComments = useCallback(
+    (rawComments: any[], assistantText: string) => {
+      if (!rawComments || !content) return;
+      const usedIndices = new Set<number>();
+      const processed = rawComments
+        .map((c, i) => {
+          const quote = c.quote;
+          let searchIdx = 0;
+          let foundIdx = -1;
+          while (true) {
+            const idx = content.indexOf(quote, searchIdx);
+            if (idx === -1) break;
+            if (!usedIndices.has(idx)) {
+              foundIdx = idx;
+              usedIndices.add(idx);
+              break;
+            }
+            searchIdx = idx + 1;
           }
-          searchIdx = idx + 1;
-        }
-        if (foundIdx === -1) foundIdx = content.indexOf(quote);
-        if (foundIdx === -1) return null;
-        return {
-          id: `comment-${Date.now()}-${i}`,
-          quote: c.quote,
-          message: c.message,
-          suggestion: c.suggestion ?? "",
-          category: c.category || "style",
-          startIndex: foundIdx,
-          endIndex: foundIdx + c.quote.length,
-        };
-      })
-      .filter((c): c is Comment => c !== null)
-      .sort((a, b) => a.startIndex - b.startIndex);
+          if (foundIdx === -1) foundIdx = content.indexOf(quote);
+          if (foundIdx === -1) return null;
+          return {
+            id: `comment-${Date.now()}-${i}`,
+            quote: c.quote,
+            message: c.message,
+            suggestion: c.suggestion ?? "",
+            category: c.category || "style",
+            startIndex: foundIdx,
+            endIndex: foundIdx + c.quote.length,
+          };
+        })
+        .filter((c): c is Comment => c !== null)
+        .sort((a, b) => a.startIndex - b.startIndex);
 
-    setConversation(prev => [...prev, {
-      type: 'feedback',
-      id: `feedback-${Date.now()}`,
-      text: assistantText,
-      comments: processed,
-    }]);
+      setConversation((prev) => [
+        ...prev,
+        {
+          type: "feedback",
+          id: `feedback-${Date.now()}`,
+          text: assistantText,
+          comments: processed,
+        },
+      ]);
 
-    if (processed.length > 0) setActiveCommentId(processed[0].id);
-  }, [content]);
+      if (processed.length > 0) setActiveCommentId(processed[0].id);
+    },
+    [content]
+  );
 
   const sendMessage = async (messageContent: string, isAnalyze = false) => {
     if (!messageContent.trim()) return;
     setIsLoading(true);
-    
+
     if (isAnalyze) {
-      track("audit_start", { source: messageContent === "Review my text." ? "header" : "chat" });
+      track("audit_start", {
+        source: messageContent === "Review my text." ? "header" : "chat",
+      });
     } else {
       track("chat_sent");
     }
 
     if (!isAnalyze) {
-      setConversation(prev => [...prev, { type: 'user', id: `user-${Date.now()}`, content: messageContent }]);
+      setConversation((prev) => [
+        ...prev,
+        { type: "user", id: `user-${Date.now()}`, content: messageContent },
+      ]);
     }
 
     try {
       const apiMessages = conversation
-        .filter(item => item.type === 'user' || item.type === 'assistant')
-        .map(item => ({ role: item.type as 'user' | 'assistant', content: (item as any).content }));
-      
-      if (!isAnalyze) apiMessages.push({ role: 'user', content: messageContent });
+        .filter((item) => item.type === "user" || item.type === "assistant")
+        .map((item) => ({
+          role: item.type as "user" | "assistant",
+          content: (item as any).content,
+        }));
+
+      if (!isAnalyze)
+        apiMessages.push({ role: "user", content: messageContent });
 
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: isAnalyze ? "review" : "chat",
-          messages: isAnalyze ? [{ role: "user", content: messageContent }] : apiMessages,
+          messages: isAnalyze
+            ? [{ role: "user", content: messageContent }]
+            : apiMessages,
           document: content,
           context: { pendingComments: allComments.map((c) => c.message) },
         }),
@@ -172,7 +196,14 @@ export default function Home() {
       if (data.comments && data.comments.length > 0) {
         processComments(data.comments, data.text);
       } else if (data.text) {
-        setConversation(prev => [...prev, { type: 'assistant', id: `assistant-${Date.now()}`, content: data.text }]);
+        setConversation((prev) => [
+          ...prev,
+          {
+            type: "assistant",
+            id: `assistant-${Date.now()}`,
+            content: data.text,
+          },
+        ]);
       }
     } catch (err) {
       console.error(err);
@@ -184,73 +215,91 @@ export default function Home() {
   const openNextComment = (currentId: string, remainingComments: Comment[]) => {
     if (viewMode !== "inline" || remainingComments.length === 0) {
       setActiveCommentId(null);
-      setPopupPosition(null);
       return;
     }
-    
-    const currentIdx = allComments.findIndex(c => c.id === currentId);
-    const nextComment = remainingComments.find(c => {
-      const idx = allComments.findIndex(ac => ac.id === c.id);
-      return idx > currentIdx;
-    }) || remainingComments[0];
-    
+
+    const currentIdx = allComments.findIndex((c) => c.id === currentId);
+    const nextComment =
+      remainingComments.find((c) => {
+        const idx = allComments.findIndex((ac) => ac.id === c.id);
+        return idx > currentIdx;
+      }) || remainingComments[0];
+
     if (nextComment) {
       setActiveCommentId(nextComment.id);
     } else {
       setActiveCommentId(null);
-      setPopupPosition(null);
     }
   };
 
   const applyEdit = (comment: Comment) => {
     if (!comment.suggestion) return;
     track("suggestion_apply", { category: comment.category });
-    const newContent = content.substring(0, comment.startIndex) + comment.suggestion + content.substring(comment.endIndex);
+    const newContent =
+      content.substring(0, comment.startIndex) +
+      comment.suggestion +
+      content.substring(comment.endIndex);
     setContent(newContent);
-    
-    const remaining = allComments.filter(c => c.id !== comment.id && c.startIndex !== -1);
-    
-    setConversation(prev => prev.map(item => {
-      if (item.type !== 'feedback') return item;
-      return { ...item, comments: item.comments.filter(c => c.id !== comment.id) };
-    }));
-    
+
+    const remaining = allComments.filter(
+      (c) => c.id !== comment.id && c.startIndex !== -1
+    );
+
+    setConversation((prev) =>
+      prev.map((item) => {
+        if (item.type !== "feedback") return item;
+        return {
+          ...item,
+          comments: item.comments.filter((c) => c.id !== comment.id),
+        };
+      })
+    );
+
     openNextComment(comment.id, remaining);
   };
 
   const dismissComment = (commentId: string) => {
-    const comment = allComments.find(c => c.id === commentId);
+    const comment = allComments.find((c) => c.id === commentId);
     if (comment) track("suggestion_dismiss", { category: comment.category });
-    const remaining = allComments.filter(c => c.id !== commentId && c.startIndex !== -1);
-    
-    setConversation(prev => prev.map(item => {
-      if (item.type !== 'feedback') return item;
-      return { ...item, comments: item.comments.filter(c => c.id !== commentId) };
-    }));
-    
+    const remaining = allComments.filter(
+      (c) => c.id !== commentId && c.startIndex !== -1
+    );
+
+    setConversation((prev) =>
+      prev.map((item) => {
+        if (item.type !== "feedback") return item;
+        return {
+          ...item,
+          comments: item.comments.filter((c) => c.id !== commentId),
+        };
+      })
+    );
+
     openNextComment(commentId, remaining);
   };
 
-  const handleCommentClick = (id: string, position: { x: number; y: number }) => {
+  const handleCommentClick = (id: string) => {
     setActiveCommentId(id);
-    if (viewMode === "inline") {
-      setPopupPosition(position);
-    }
   };
 
   const highlightRanges = allComments
-    .filter(c => c.startIndex !== -1)
-    .map(c => ({ start: c.startIndex, end: c.endIndex, id: c.id, category: c.category }));
+    .filter((c) => c.startIndex !== -1)
+    .map((c) => ({
+      start: c.startIndex,
+      end: c.endIndex,
+      id: c.id,
+      category: c.category,
+    }));
 
   // Block rendering until auth is loaded
   if (!isLoaded) return null;
-  if (!user) return null; 
+  if (!user) return null;
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[hsl(var(--bg-app))] font-sans">
-      <Header 
-        wordCount={content.trim() ? content.trim().split(/\s+/).length : 0} 
-        suggestionsCount={allComments.length} 
+      <Header
+        wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
+        suggestionsCount={allComments.length}
         hasAnalyzed={conversation.length > 0}
         onAnalyze={() => sendMessage("Review my text.", true)}
         isAnalyzing={isLoading}
@@ -259,7 +308,11 @@ export default function Home() {
 
       <div className="flex-1 flex pt-14 overflow-hidden">
         {/* Editor Container */}
-        <main className={`h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-24 pb-[50vh] transition-all duration-500 notebook-bg ${viewMode === "sidebar" ? "w-2/3" : "w-full"}`}>
+        <main
+          className={`h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-24 pb-[50vh] transition-all duration-500 notebook-bg ${
+            viewMode === "sidebar" ? "w-2/3" : "w-full"
+          }`}
+        >
           {/* Sliced Page Layout */}
           <div className="flex flex-col gap-16 w-full items-center">
             {/* Page 1 */}
@@ -267,19 +320,20 @@ export default function Home() {
               <div className="absolute -top-10 left-0 text-[10px] font-bold tracking-widest text-white/20 uppercase">
                 Sheet 01
               </div>
-              <Editor
-                content={content}
-                setContent={setContent}
-                highlightRanges={highlightRanges}
-                activeCommentId={activeCommentId}
-                onCommentClick={handleCommentClick}
-                onActiveMarkPositionChange={(pos) => setPopupPosition(pos)}
-                isAnalyzing={isLoading}
-              />
-              
+            <Editor
+              content={content}
+              setContent={setContent}
+              highlightRanges={highlightRanges}
+              activeCommentId={activeCommentId}
+              onCommentClick={handleCommentClick}
+              isAnalyzing={isLoading}
+            />
+
               {!content.trim() && (
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none text-center">
-                  <p className="text-4xl font-serif italic text-white">Write something.</p>
+                  <p className="text-4xl font-serif italic text-white">
+                    Write something.
+                  </p>
                 </div>
               )}
             </div>
@@ -298,14 +352,18 @@ export default function Home() {
             <FeedbackSidebar
               conversation={conversation}
               activeCommentId={activeCommentId}
-              onCommentClick={(id) => handleCommentClick(id, { x: 0, y: 0 })}
+              onCommentClick={handleCommentClick}
               onApply={applyEdit}
               onDismiss={dismissComment}
               onRefresh={() => sendMessage("Review my text.", true)}
               isLoading={isLoading}
               chatInput={chatInput}
               setChatInput={setChatInput}
-              onChatSubmit={(e) => { e.preventDefault(); sendMessage(chatInput); setChatInput(""); }}
+              onChatSubmit={(e) => {
+                e.preventDefault();
+                sendMessage(chatInput);
+                setChatInput("");
+              }}
               chatEndRef={chatEndRef}
             />
           </aside>
@@ -313,21 +371,24 @@ export default function Home() {
       </div>
 
       {/* Inline Popup */}
-      {viewMode === "inline" && activeComment && popupPosition && (
+      {viewMode === "inline" && activeComment && (
         <InlinePopup
           comment={activeComment}
-          position={popupPosition}
-          currentIndex={allComments.findIndex(c => c.id === activeComment.id) + 1}
-          totalCount={allComments.filter(c => c.startIndex !== -1).length}
+          currentIndex={
+            allComments.findIndex((c) => c.id === activeComment.id) + 1
+          }
+          totalCount={allComments.filter((c) => c.startIndex !== -1).length}
           onApply={applyEdit}
           onDismiss={dismissComment}
-          onClose={() => { setActiveCommentId(null); setPopupPosition(null); }}
+          onClose={() => setActiveCommentId(null)}
         />
       )}
 
       {/* View Mode Toggle */}
       <button
-        onClick={() => setViewMode(viewMode === "sidebar" ? "inline" : "sidebar")}
+        onClick={() =>
+          setViewMode(viewMode === "sidebar" ? "inline" : "sidebar")
+        }
         className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-2.5 bg-white text-black rounded-full shadow-2xl text-sm font-bold hover:scale-105 transition-all"
       >
         {viewMode === "sidebar" ? (
