@@ -37,7 +37,7 @@ export async function generateComments(document: string, focus?: string) {
 ${focus ? `Focus: ${focus.toUpperCase()}` : ""}
 
 RULES:
-1. 'original_text' must be EXACT text from the document (1-2 sentences max).
+1. 'original_text' must be EXACT text from the document.
 2. 'comment' must be ONE concise sentence explaining the issue.
 3. 'suggestion' is REQUIRED for 'insert' and 'rewrite'—provide the exact text to add or replace. Only 'praise' can have null suggestion.
 4. Be specific. No vague advice. Every rewrite/insert must have concrete replacement text.
@@ -51,7 +51,7 @@ ACTIONS:
 ${document}
 """
 
-Generate 3-5 specific comments. Every 'insert' or 'rewrite' MUST include a concrete 'suggestion' with the exact text to use.`,
+Generate a list of specific comments. Every 'insert' or 'rewrite' MUST include a concrete 'suggestion' with the exact text to use.`,
     });
 
     console.log("[reviewer] ====== RECEIVED FROM LLM ======");

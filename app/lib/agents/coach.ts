@@ -26,10 +26,9 @@ ${document}
 ${contextInfo}
 
 RULES:
-1. For reviews/feedback → use 'review_document' tool. Say only: "Here are my suggestions." Nothing more.
+1. For reviews/feedback → use 'review_document' tool. Keep your response very short. Nothing more.
 2. For questions → answer in 1-2 sentences max. No fluff.
-3. Never summarize what the tool found. The UI shows the comments.
-4. Never give general writing advice. Be specific or stay silent.`,
+3. Never give general writing advice. Be specific or stay silent.`,
 
     tools: {
       review_document: {

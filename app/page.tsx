@@ -5,7 +5,7 @@ import { Header } from "./components/Header";
 import { Editor } from "./components/writing/Editor";
 import { FeedbackSidebar } from "./components/feedback/FeedbackSidebar";
 import { Comment } from "./components/feedback/SuggestionCard";
-import { Search, Loader2 } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 
 // Unified conversation item - can be a message or a feedback batch
 type ConversationItem = 
@@ -163,7 +163,7 @@ export default function Home() {
   const showSidebar = conversation.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#f9fbfd] text-stone-900 font-sans selection:bg-stone-200">
+    <div className="min-h-screen bg-[hsl(var(--background))]">
       <Header 
         wordCount={wordCount} 
         suggestionsCount={allComments.length} 
@@ -171,36 +171,60 @@ export default function Home() {
       />
 
       <div className="pt-14 h-screen flex">
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
-            <div className="w-full max-w-[850px] min-h-[1100px] bg-white page-shadow p-16 sm:p-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <Editor
-                content={content}
-                setContent={setContent}
-                highlightRanges={highlightRanges}
-                activeCommentId={activeCommentId}
-                onCommentClick={setActiveCommentId}
-              />
+        {/* Main editor area */}
+        <main className="flex-1 overflow-y-auto scrollbar-thin">
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            {/* Paper container */}
+            <div 
+              className="w-full bg-[hsl(var(--surface-0))] paper-shadow rounded-lg animate-fade-in"
+              style={{ minHeight: 'calc(100vh - 160px)' }}
+            >
+              <div className="px-12 py-16 sm:px-16 sm:py-20">
+                <Editor
+                  content={content}
+                  setContent={setContent}
+                  highlightRanges={highlightRanges}
+                  activeCommentId={activeCommentId}
+                  onCommentClick={setActiveCommentId}
+                />
+              </div>
             </div>
-          </div>
 
-          {!showSidebar && content.trim() && (
-            <div className="pb-24 flex justify-center">
-              <button
-                onClick={() => sendMessage("Please review my document and provide feedback.", true)}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-8 py-3 bg-stone-900 text-white text-sm font-bold rounded-full shadow-xl hover:bg-stone-800 hover:scale-105 transition-all active:scale-95 disabled:opacity-50"
-              >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                Analyze writing
-              </button>
-            </div>
-          )}
+            {/* Analyze button */}
+            {!showSidebar && content.trim() && (
+              <div className="py-10 flex justify-center animate-fade-in stagger-2">
+                <button
+                  onClick={() => sendMessage("Please review my document and provide feedback.", true)}
+                  disabled={isLoading}
+                  className="group flex items-center gap-3 px-7 py-3.5 bg-linear-to-r from-[hsl(var(--accent-primary))] to-[hsl(var(--accent-primary-hover))] text-white text-sm font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-[1.02] transition-smooth active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 group-hover:animate-pulse" />
+                  )}
+                  <span>Analyze my writing</span>
+                </button>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!content.trim() && (
+              <div className="py-16 text-center animate-fade-in stagger-3">
+                <p className="text-sm text-[hsl(var(--warm-400))]">
+                  Start writing above, then click analyze to get feedback
+                </p>
+              </div>
+            )}
+          </div>
         </main>
 
-        <div className={`transition-all duration-300 ease-in-out border-l border-stone-200
-          ${showSidebar ? 'w-[400px]' : 'w-0 overflow-hidden opacity-0'}
-        `}>
+        {/* Sidebar */}
+        <div 
+          className={`transition-all duration-300 ease-out border-l border-[hsl(var(--border-subtle))]
+            ${showSidebar ? 'w-[400px] opacity-100' : 'w-0 overflow-hidden opacity-0'}
+          `}
+        >
           <FeedbackSidebar
             conversation={conversation}
             activeCommentId={activeCommentId}

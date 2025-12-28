@@ -33,21 +33,22 @@ export const Editor: React.FC<EditorProps> = ({
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
+      textarea.style.height = `${Math.max(textarea.scrollHeight, 600)}px`;
     }
   }, [content]);
 
   return (
-    <div className="relative w-full h-full">
-      <div className="relative min-h-[800px]">
-        {/* Underline layer */}
+    <div className="relative w-full">
+      <div className="relative" style={{ minHeight: '600px' }}>
+        {/* Highlight underlay layer */}
         <div
           ref={highlightRef}
           className="absolute inset-0 whitespace-pre-wrap overflow-hidden pointer-events-none text-transparent"
           style={{
-            fontFamily: 'var(--font-serif, serif)',
-            fontSize: '21px',
-            lineHeight: '1.8',
+            fontFamily: 'var(--font-serif), Georgia, serif',
+            fontSize: '18px',
+            lineHeight: '1.9',
+            letterSpacing: '0.01em',
             wordBreak: 'break-word',
           }}
           aria-hidden="true"
@@ -63,20 +64,53 @@ export const Editor: React.FC<EditorProps> = ({
               }
               
               const isActive = activeCommentId === range.id;
-              const styles = range.category ? getCategoryStyles(range.category) : { highlight: "bg-stone-100/60 border-stone-300" };
+              
+              // Get category-specific colors
+              let highlightColor = "var(--warm-200)";
+              let borderColor = "var(--warm-400)";
+              
+              if (range.category) {
+                switch (range.category) {
+                  case "grammar":
+                  case "consistency":
+                    highlightColor = "var(--category-grammar-soft)";
+                    borderColor = "var(--category-grammar)";
+                    break;
+                  case "clarity":
+                  case "logic":
+                  case "thesis":
+                    highlightColor = "var(--category-clarity-soft)";
+                    borderColor = "var(--category-clarity)";
+                    break;
+                  case "style":
+                  case "tone":
+                    highlightColor = "var(--category-style-soft)";
+                    borderColor = "var(--category-style)";
+                    break;
+                  case "structure":
+                  case "transitions":
+                  case "examples":
+                    highlightColor = "var(--category-structure-soft)";
+                    borderColor = "var(--category-structure)";
+                    break;
+                }
+              }
               
               parts.push(
                 <mark
                   key={`h-${i}`}
                   onClick={() => onCommentClick(range.id)}
-                  className={`
-                    relative pointer-events-auto cursor-pointer transition-all duration-200
-                    border-b-2
-                    ${isActive 
-                      ? "bg-stone-900/10 border-stone-900 shadow-[0_2px_0_0_#1c1917]" 
-                      : `${styles.highlight} hover:bg-stone-900/5`}
-                  `}
-                  style={{ color: 'transparent' }}
+                  className="relative pointer-events-auto cursor-pointer transition-all duration-200 rounded-sm"
+                  style={{ 
+                    color: 'transparent',
+                    backgroundColor: isActive 
+                      ? `hsl(${borderColor}/0.15)` 
+                      : `hsl(${highlightColor})`,
+                    borderBottom: `2px solid hsl(${borderColor}${isActive ? '' : '/0.5'})`,
+                    boxShadow: isActive 
+                      ? `0 2px 0 0 hsl(${borderColor})` 
+                      : 'none',
+                  }}
                 >
                   {content.substring(range.start, range.end)}
                 </mark>
@@ -96,16 +130,33 @@ export const Editor: React.FC<EditorProps> = ({
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Start writing your story..."
-          className="relative w-full bg-transparent text-[#1a1a1a] resize-none outline-none placeholder:text-stone-300 p-0 border-none focus:ring-0 overflow-hidden"
+          placeholder="Start writing..."
+          className="relative w-full bg-transparent text-[hsl(var(--warm-800))] resize-none outline-none p-0 border-none focus:ring-0 overflow-hidden"
           style={{
-            fontFamily: 'var(--font-serif, serif)',
-            fontSize: '21px',
-            lineHeight: '1.8',
+            fontFamily: 'var(--font-serif), Georgia, serif',
+            fontSize: '18px',
+            lineHeight: '1.9',
+            letterSpacing: '0.01em',
             wordBreak: 'break-word',
-            minHeight: '800px'
+            minHeight: '600px',
+            caretColor: 'hsl(var(--accent-primary))',
           }}
         />
+        
+        {/* Placeholder styling */}
+        {!content && (
+          <div 
+            className="absolute top-0 left-0 pointer-events-none text-[hsl(var(--warm-300))]"
+            style={{
+              fontFamily: 'var(--font-serif), Georgia, serif',
+              fontSize: '18px',
+              lineHeight: '1.9',
+              letterSpacing: '0.01em',
+            }}
+          >
+            Start writing...
+          </div>
+        )}
       </div>
     </div>
   );

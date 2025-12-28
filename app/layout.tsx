@@ -1,30 +1,29 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, EB_Garamond, Inter } from "next/font/google";
+import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const ebGaramond = EB_Garamond({
-  variable: "--font-serif",
-  subsets: ["latin"],
-});
-
-const inter = Inter({
+const instrumentSans = Instrument_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "WriteGuide - AI Writing Feedback",
-  description: "Get AI-assisted feedback on your writing",
+  title: "WriteGuide — Your AI Writing Coach",
+  description: "Get thoughtful, actionable feedback on your writing",
 };
 
 export default function RootLayout({
@@ -35,7 +34,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${geistMono.variable} ${ebGaramond.variable} antialiased font-sans`}
+        className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} antialiased`}
+        style={{ fontFamily: 'var(--font-sans), system-ui, sans-serif' }}
       >
         {children}
       </body>
