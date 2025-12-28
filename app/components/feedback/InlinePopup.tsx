@@ -28,12 +28,12 @@ export const InlinePopup: React.FC<InlinePopupProps> = ({
       {/* Backdrop */}
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
-      {/* The anchored tool */}
+      {/* Popup */}
       <div
-        className="fixed z-50 w-[440px] bg-[#0a0a0a] text-white rounded-2xl shadow-[0_30px_90px_rgba(0,0,0,0.9)] border border-white/10 animate-in fade-in slide-in-from-top-4 duration-300 overflow-hidden transition-all"
+        className="fixed z-50 w-[440px] bg-[#0a0a0a] text-white rounded-2xl shadow-[0_30px_90px_rgba(0,0,0,0.9)] border border-white/10 animate-in fade-in slide-in-from-top-4 duration-500 overflow-hidden transition-all"
         style={{
           left: Math.min(Math.max(position.x - 220, 20), window.innerWidth - 460),
-          top: Math.min(position.y + 16, window.innerHeight - 400),
+          top: Math.min(Math.max(position.y + 16, 80), window.innerHeight - 450),
         }}
       >
         {/* Progress indicator line at the very top */}

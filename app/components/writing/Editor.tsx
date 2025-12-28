@@ -104,10 +104,10 @@ export const Editor: React.FC<EditorProps> = ({
           <span
             onClick={(e) => handleIconClick(e, range.id)}
             className={`
-              absolute -top-5 left-0 z-20 flex items-center justify-center w-5 h-5 rounded-full cursor-pointer transition-all
+              absolute -top-6 left-0 z-20 flex items-center justify-center w-6 h-6 rounded-full cursor-pointer transition-all
               ${isActive 
-                ? "bg-white text-black shadow-lg scale-110" 
-                : "bg-stone-800 text-indigo-400 border border-white/10 shadow-sm hover:bg-stone-700 hover:scale-105"
+                ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] scale-110" 
+                : "bg-stone-800 text-indigo-400 border border-white/20 shadow-sm hover:bg-stone-700 hover:scale-105"
               }
             `}
             style={{ pointerEvents: "auto" }}
@@ -119,7 +119,9 @@ export const Editor: React.FC<EditorProps> = ({
           <mark
             ref={isActive ? activeMarkRef : null}
             className={`rounded-sm transition-colors duration-200 cursor-pointer ${
-              isActive ? "bg-white/20" : "bg-white/5 hover:bg-white/10"
+              isActive 
+                ? "bg-indigo-500/30 ring-1 ring-indigo-500/50" 
+                : "bg-white/10 hover:bg-white/20"
             }`}
             onClick={(e) => handleIconClick(e, range.id)}
             style={{ pointerEvents: "auto", color: "inherit" }}
