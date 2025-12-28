@@ -279,9 +279,9 @@ export default function Home() {
     openNextComment(commentId, remaining);
   };
 
-  const handleCommentClick = (id: string, position: { x: number; y: number }) => {
+  const handleCommentClick = (id: string, position?: { x: number; y: number }) => {
     setActiveCommentId(id);
-    if (viewMode === "inline") {
+    if (viewMode === "inline" && position) {
       setPopupPosition(position);
     }
   };
@@ -321,15 +321,25 @@ export default function Home() {
           <div className="flex flex-col gap-16 w-full items-center">
             {/* Page 1 */}
             <div className="w-full max-w-4xl bg-[hsl(var(--bg-sheet))] shadow-[0_4px_60px_rgba(0,0,0,0.5)] border border-white/5 px-20 py-24 relative transition-all duration-500 rounded-lg">
-              <div className="absolute -top-10 left-0 text-[10px] font-bold tracking-widest text-white/20 uppercase">
-                Sheet 01
+              <div className="absolute -top-10 left-0 flex items-center gap-4 w-full">
+                <input 
+                  type="text"
+                  defaultValue="Sheet 01"
+                  className="text-[10px] font-bold tracking-widest text-white/20 uppercase bg-transparent outline-none focus:text-white/60 transition-colors cursor-text"
+                  placeholder="UNTITLED DOCUMENT"
+                />
+                <div className="h-px bg-white/5 flex-1" />
+                <div className="text-[9px] font-mono text-white/10 uppercase tracking-tighter">
+                  {content.length} characters
+                </div>
               </div>
-            <Editor
+              <Editor
               content={content}
               setContent={setContent}
               highlightRanges={highlightRanges}
               activeCommentId={activeCommentId}
               onCommentClick={handleCommentClick}
+              onActiveMarkPositionChange={(pos) => setPopupPosition(pos)}
               isAnalyzing={isLoading}
             />
 
@@ -375,16 +385,15 @@ export default function Home() {
       </div>
 
       {/* Inline Popup */}
-      {viewMode === "inline" && activeComment && (
+      {viewMode === "inline" && activeComment && popupPosition && (
         <InlinePopup
           comment={activeComment}
-          currentIndex={
-            allComments.findIndex((c) => c.id === activeComment.id) + 1
-          }
-          totalCount={allComments.filter((c) => c.startIndex !== -1).length}
+          currentIndex={allComments.findIndex(c => c.id === activeComment.id) + 1}
+          totalCount={allComments.filter(c => c.startIndex !== -1).length}
           onApply={applyEdit}
           onDismiss={dismissComment}
-          onClose={() => setActiveCommentId(null)}
+          onClose={() => { setActiveCommentId(null); setPopupPosition(null); }}
+          position={popupPosition}
         />
       )}
 

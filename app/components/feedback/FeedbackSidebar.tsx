@@ -13,7 +13,7 @@ type ConversationItem =
 interface FeedbackSidebarProps {
   conversation: ConversationItem[];
   activeCommentId: string | null;
-  onCommentClick: (id: string) => void;
+  onCommentClick: (id: string, position?: { x: number; y: number }) => void;
   onApply: (comment: Comment) => void;
   onDismiss: (id: string) => void;
   onRefresh: () => void;

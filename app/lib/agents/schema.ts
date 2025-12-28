@@ -3,9 +3,9 @@ import { z } from "zod";
 // Simple quote-based comments
 export const CommentSchema = z.object({
   quote: z.string().min(1).describe("Exact text from the document to highlight."),
-  message: z.string().describe("One sentence explaining the issue."),
+  message: z.string().describe("One sentence explaining the reason."),
   suggestion: z.string().describe("The replacement text."),
-  category: z.string().describe("A single word describing the type of issue (e.g., Clarity, Flow, Tone)."),
+  category: z.string().describe("A single word describing the type of suggestion."),
 });
 
 export type Comment = z.infer<typeof CommentSchema>;

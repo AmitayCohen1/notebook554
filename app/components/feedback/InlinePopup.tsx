@@ -23,25 +23,40 @@ export const InlinePopup: React.FC<InlinePopupProps> = ({
   onClose,
   position,
 }) => {
+  // Keyboard Shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onApply(comment);
+      } else if (e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        onDismiss(comment.id);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [comment, onApply, onDismiss, onClose]);
+
   return (
     <>
-      {/* Cinematic Spotlight Backdrop - Blurs everything except active area */}
+      {/* Cinematic Spotlight Backdrop - Much larger area of clear visibility */}
       <div 
-        className="fixed inset-0 z-40 backdrop-blur-sm bg-black/20 animate-in fade-in duration-500" 
+        className="fixed inset-0 z-40 backdrop-blur-md bg-black/40 animate-in fade-in duration-500" 
         style={{
-          maskImage: `radial-gradient(circle 250px at ${position.x}px ${position.y - 100}px, transparent 0%, black 100%)`,
-          WebkitMaskImage: `radial-gradient(circle 250px at ${position.x}px ${position.y - 100}px, transparent 0%, black 100%)`,
+          maskImage: `radial-gradient(circle 800px at ${position.x}px ${position.y - 100}px, transparent 0%, black 100%)`,
+          WebkitMaskImage: `radial-gradient(circle 800px at ${position.x}px ${position.y - 100}px, transparent 0%, black 100%)`,
         }}
         onClick={onClose} 
       />
 
-      {/* Popup - Wider & Under the text */}
+      {/* Popup - Wider & Surgical */}
       <div
-        className="fixed z-50 w-[420px] bg-[#0a0a0a] text-white rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] border border-white/10 animate-in fade-in slide-in-from-top-2 duration-300 overflow-hidden transition-all"
-        style={{
-          left: Math.min(Math.max(position.x - 210, 20), window.innerWidth - 440),
-          top: position.y + 12,
-        }}
+        className="fixed z-50 w-[600px] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0a0a0a] text-white rounded-3xl shadow-[0_30px_100px_rgba(0,0,0,0.9)] border border-white/10 animate-in fade-in zoom-in-95 duration-300 overflow-hidden transition-all"
       >
         {/* Progress line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/5">
@@ -51,42 +66,48 @@ export const InlinePopup: React.FC<InlinePopupProps> = ({
           />
         </div>
 
-        <div className="p-5 space-y-4 text-center">
+        <div className="p-8 space-y-6 text-left">
           {/* Header area - Category & Progress */}
-          <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-[0.15em] text-white/20">
-            <div className="flex items-center gap-1.5">
-              <Sparkle className="w-2.5 h-2.5 text-indigo-400/80" />
+          <div className="flex justify-between items-center text-[10px] font-medium uppercase tracking-[0.15em] text-white/30">
+            <div className="flex items-center gap-2">
+              <Sparkle className="w-3 h-3 text-indigo-400/80" />
               <span>{comment.category} • {currentIndex}/{totalCount}</span>
             </div>
-            <button onClick={onClose} className="hover:text-white transition-colors">
-              <X className="w-3.5 h-3.5" />
+            <button onClick={onClose} className="hover:text-white transition-colors p-1 -mr-1">
+              <X className="w-4 h-4" />
             </button>
           </div>
           
-          {/* The Reason - Small text on top */}
-          <p className="text-[13px] font-medium text-white/50 leading-snug">
-            {comment.message}
-          </p>
+          <div className="space-y-4">
+            {/* The Reason - Light & Simple */}
+            <p className="text-sm font-medium text-white/60 leading-relaxed max-w-xl">
+              {comment.message}
+            </p>
 
-          {/* The Suggestion - Large and clear at the core */}
-          <div className="text-lg font-bold text-white leading-tight tracking-tight px-2">
-            {comment.suggestion}
+            {/* The Suggestion - Clear and un-bolded */}
+            <div className="text-xl font-medium text-white leading-relaxed tracking-tight">
+              {comment.suggestion}
+            </div>
           </div>
 
-          {/* Action Row */}
-          <div className="flex items-center gap-2 pt-1">
+          {/* Action Row - Simple buttons with keyboard hints */}
+          <div className="flex items-center gap-3 pt-2">
             <button
               onClick={() => onApply(comment)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white text-black text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-white/90 transition-all active:scale-[0.98]"
+              className="group flex-1 flex items-center justify-between px-8 py-4 bg-white text-black text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-white/90 transition-all active:scale-[0.98]"
             >
-              <Check className="w-3.5 h-3.5" />
-              Apply
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                Apply Fix
+              </div>
+              <span className="text-[9px] opacity-30 group-hover:opacity-100 font-mono border border-black/10 px-1 rounded">ENTER</span>
             </button>
             <button
               onClick={() => onDismiss(comment.id)}
-              className="px-5 py-2.5 bg-white/5 text-white/40 text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-white/10 hover:text-white transition-all border border-white/5"
+              className="group flex items-center justify-between px-8 py-4 bg-white/5 text-white/50 text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-white/10 hover:text-white transition-all border border-white/5"
             >
               Skip
+              <span className="text-[9px] opacity-20 group-hover:opacity-100 font-mono border border-white/10 px-1 rounded ml-4">S</span>
             </button>
           </div>
         </div>

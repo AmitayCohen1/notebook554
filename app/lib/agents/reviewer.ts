@@ -22,7 +22,7 @@ RULES:
 1. quote = exact text copied from the document. Can be a few words, a full sentence, or a whole paragraph.
 2. message = EXTREMELY CONCISE reason (max 4 words).
 3. suggestion = THE FIX. You MUST provide a concrete replacement.
-4. category = ONE WORD describing the type of issue.`,
+4. category = ONE WORD describing the type of suggestion.`,
       prompt: `${focusNote}
 
 DOCUMENT:
