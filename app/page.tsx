@@ -65,7 +65,7 @@ export default function LandingPage() {
         </section>
 
         {/* The "Consumer" Value Section */}
-        <section className="py-32 px-6 border-t border-white/[0.03]">
+        <section className="py-32 px-6 border-t border-white/3">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
               <ValueProp 
@@ -90,14 +90,14 @@ export default function LandingPage() {
         {/* Minimal Preview */}
         <section className="pb-40 px-6">
           <div className="max-w-5xl mx-auto">
-            <div className="relative p-1 bg-linear-to-b from-white/[0.08] to-transparent rounded-[40px]">
-              <div className="aspect-video w-full bg-[#0A0A0A] rounded-[38px] border border-white/[0.05] shadow-2xl overflow-hidden flex items-center justify-center p-20">
+            <div className="relative p-1 bg-linear-to-b from-white/8 to-transparent rounded-[40px]">
+              <div className="aspect-video w-full bg-[#0A0A0A] rounded-[38px] border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center p-20">
                 <div className="w-full max-w-md space-y-8 animate-pulse">
-                  <div className="h-2 w-3/4 bg-white/[0.03] rounded-full" />
-                  <div className="h-2 w-full bg-white/[0.03] rounded-full" />
-                  <div className="h-2 w-1/2 bg-white/[0.03] rounded-full" />
+                  <div className="h-2 w-3/4 bg-white/3 rounded-full" />
+                  <div className="h-2 w-full bg-white/3 rounded-full" />
+                  <div className="h-2 w-1/2 bg-white/3 rounded-full" />
                   <div className="pt-12">
-                    <div className="h-24 w-full bg-indigo-500/[0.02] border border-indigo-500/10 rounded-2xl flex items-center px-6">
+                    <div className="h-24 w-full bg-indigo-500/2 border border-indigo-500/10 rounded-2xl flex items-center px-6">
                       <div className="w-8 h-8 rounded-full bg-indigo-500/20" />
                     </div>
                   </div>
@@ -108,7 +108,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="py-20 px-6 border-t border-white/[0.03] bg-black">
+      <footer className="py-20 px-6 border-t border-white/3 bg-black">
         <div className="max-w-6xl mx-auto flex flex-col md:row justify-between items-center gap-10">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black">
@@ -135,7 +135,7 @@ export default function LandingPage() {
 function ValueProp({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
     <div className="space-y-6 group">
-      <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center group-hover:border-white/20 transition-all">
+      <div className="w-10 h-10 rounded-xl bg-white/3 border border-white/8 flex items-center justify-center group-hover:border-white/20 transition-all">
         {icon}
       </div>
       <div className="space-y-3">
