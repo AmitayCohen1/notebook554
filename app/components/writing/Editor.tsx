@@ -15,7 +15,7 @@ interface EditorProps {
   setContent: (content: string) => void;
   highlightRanges: Range[];
   activeCommentId: string | null;
-  onCommentClick: (id: string) => void;
+  onCommentClick: (id: string, position: { x: number; y: number }) => void;
 }
 
 const CategoryIcon = ({ category, isActive }: { category?: string; isActive: boolean }) => {
@@ -35,6 +35,12 @@ export const Editor: React.FC<EditorProps> = ({
   activeCommentId,
   onCommentClick,
 }) => {
+  const handleIconClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    onCommentClick(id, { x: rect.left, y: rect.bottom });
+  };
+
   const renderHighlights = () => {
     let textToRender = content || " ";
     if (content.endsWith("\n")) textToRender = content + " ";
@@ -65,15 +71,12 @@ export const Editor: React.FC<EditorProps> = ({
         <span key={`h-${range.id}`} className="relative inline">
           {/* Floating Icon */}
           <span
-            onClick={(e) => {
-              e.stopPropagation();
-              onCommentClick(range.id);
-            }}
+            onClick={(e) => handleIconClick(e, range.id)}
             className={`
               absolute -top-5 left-0 z-20 flex items-center justify-center w-5 h-5 rounded-full cursor-pointer transition-all
               ${isActive 
-                ? "bg-indigo-600 text-white shadow-lg" 
-                : "bg-white text-indigo-600 border border-indigo-200 shadow-sm hover:bg-indigo-50"
+                ? "bg-indigo-600 text-white shadow-lg scale-110" 
+                : "bg-white text-indigo-600 border border-indigo-200 shadow-sm hover:bg-indigo-50 hover:scale-105"
               }
             `}
             style={{ pointerEvents: "auto" }}
@@ -81,11 +84,13 @@ export const Editor: React.FC<EditorProps> = ({
             <CategoryIcon category={range.category} isActive={isActive} />
           </span>
           
-          {/* Highlighted Text - TEXT IS VISIBLE HERE */}
+          {/* Highlighted Text */}
           <mark
-            className={`rounded-sm transition-colors duration-200 ${
-              isActive ? "bg-indigo-200" : "bg-indigo-100"
+            className={`rounded-sm transition-colors duration-200 cursor-pointer ${
+              isActive ? "bg-indigo-200" : "bg-indigo-100 hover:bg-indigo-150"
             }`}
+            onClick={(e) => handleIconClick(e, range.id)}
+            style={{ pointerEvents: "auto" }}
           >
             {content.substring(range.start, range.end)}
           </mark>
@@ -121,12 +126,13 @@ export const Editor: React.FC<EditorProps> = ({
     >
       {/* Layer 1: Visible Text + Highlights + Icons */}
       <div
-        className="pointer-events-none select-none"
+        className="select-none"
         style={{
           ...sharedStyles,
           gridArea: "1 / 1 / 2 / 2",
-          color: "#1a1a1a", // TEXT IS VISIBLE
+          color: "#1a1a1a",
           paddingTop: "24px",
+          pointerEvents: "none",
         }}
       >
         {renderHighlights()}
@@ -142,8 +148,8 @@ export const Editor: React.FC<EditorProps> = ({
         style={{
           ...sharedStyles,
           gridArea: "1 / 1 / 2 / 2",
-          color: "transparent", // TEXT IS INVISIBLE - user types into this
-          caretColor: "#1a1a1a", // But cursor is visible
+          color: "transparent",
+          caretColor: "#1a1a1a",
           paddingTop: "24px",
         }}
       />

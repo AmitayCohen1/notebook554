@@ -4,7 +4,9 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Header } from "./components/Header";
 import { Editor } from "./components/writing/Editor";
 import { FeedbackSidebar } from "./components/feedback/FeedbackSidebar";
+import { InlinePopup } from "./components/feedback/InlinePopup";
 import { Comment } from "./components/feedback/SuggestionCard";
+import { PanelRight, PanelRightClose } from "lucide-react";
 
 type ConversationItem = 
   | { type: 'user'; id: string; content: string }
@@ -17,6 +19,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"sidebar" | "inline">("inline");
+  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -24,7 +28,8 @@ export default function Home() {
     .filter((item): item is Extract<ConversationItem, { type: 'feedback' }> => item.type === 'feedback')
     .flatMap(item => item.comments);
 
-  // Sync sidebar scroll
+  const activeComment = allComments.find(c => c.id === activeCommentId);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
@@ -100,8 +105,13 @@ export default function Home() {
       comments: processed,
     }]);
 
-    if (processed.length > 0) setActiveCommentId(processed[0].id);
-  }, [content]);
+    if (processed.length > 0) {
+      setActiveCommentId(processed[0].id);
+      if (viewMode === "inline") {
+        // Don't auto-open popup, let user click
+      }
+    }
+  }, [content, viewMode]);
 
   const sendMessage = async (messageContent: string, isAnalyze = false) => {
     if (!messageContent.trim()) return;
@@ -151,6 +161,8 @@ export default function Home() {
       if (item.type !== 'feedback') return item;
       return { ...item, comments: item.comments.filter(c => c.id !== comment.id) };
     }));
+    setActiveCommentId(null);
+    setPopupPosition(null);
   };
 
   const dismissComment = (commentId: string) => {
@@ -158,6 +170,15 @@ export default function Home() {
       if (item.type !== 'feedback') return item;
       return { ...item, comments: item.comments.filter(c => c.id !== commentId) };
     }));
+    setActiveCommentId(null);
+    setPopupPosition(null);
+  };
+
+  const handleCommentClick = (id: string, position: { x: number; y: number }) => {
+    setActiveCommentId(id);
+    if (viewMode === "inline") {
+      setPopupPosition(position);
+    }
   };
 
   const highlightRanges = allComments
@@ -175,16 +196,16 @@ export default function Home() {
       />
 
       <div className="flex-1 flex pt-14 overflow-hidden">
-        {/* Editor Container (Scrollable) */}
-        <main className="w-3/5 h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-16 pb-[50vh]">
+        {/* Editor Container */}
+        <main className={`h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-16 pb-[50vh] transition-all duration-500 ${viewMode === "sidebar" ? "w-3/5" : "w-full"}`}>
           {/* Paper Sheet */}
-          <div className="w-full max-w-2xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-stone-200 px-16 py-24 relative">
+          <div className="w-full max-w-3xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-stone-200 px-16 py-24 relative">
             <Editor
               content={content}
               setContent={setContent}
               highlightRanges={highlightRanges}
               activeCommentId={activeCommentId}
-              onCommentClick={setActiveCommentId}
+              onCommentClick={handleCommentClick}
             />
             
             {!content.trim() && (
@@ -195,23 +216,54 @@ export default function Home() {
           </div>
         </main>
 
-        {/* Sidebar Panel */}
-        <aside className="w-2/5 h-full bg-white border-l border-stone-200">
-          <FeedbackSidebar
-            conversation={conversation}
-            activeCommentId={activeCommentId}
-            onCommentClick={setActiveCommentId}
-            onApply={applyEdit}
-            onDismiss={dismissComment}
-            onRefresh={() => sendMessage("Review my text.", true)}
-            isLoading={isLoading}
-            chatInput={chatInput}
-            setChatInput={setChatInput}
-            onChatSubmit={(e) => { e.preventDefault(); sendMessage(chatInput); setChatInput(""); }}
-            chatEndRef={chatEndRef}
-          />
-        </aside>
+        {/* Sidebar Panel (only in sidebar mode) */}
+        {viewMode === "sidebar" && (
+          <aside className="w-2/5 h-full bg-white border-l border-stone-200">
+            <FeedbackSidebar
+              conversation={conversation}
+              activeCommentId={activeCommentId}
+              onCommentClick={(id) => handleCommentClick(id, { x: 0, y: 0 })}
+              onApply={applyEdit}
+              onDismiss={dismissComment}
+              onRefresh={() => sendMessage("Review my text.", true)}
+              isLoading={isLoading}
+              chatInput={chatInput}
+              setChatInput={setChatInput}
+              onChatSubmit={(e) => { e.preventDefault(); sendMessage(chatInput); setChatInput(""); }}
+              chatEndRef={chatEndRef}
+            />
+          </aside>
+        )}
       </div>
+
+      {/* Inline Popup (only in inline mode) */}
+      {viewMode === "inline" && activeComment && popupPosition && (
+        <InlinePopup
+          comment={activeComment}
+          position={popupPosition}
+          onApply={applyEdit}
+          onDismiss={dismissComment}
+          onClose={() => { setActiveCommentId(null); setPopupPosition(null); }}
+        />
+      )}
+
+      {/* View Mode Toggle */}
+      <button
+        onClick={() => setViewMode(viewMode === "sidebar" ? "inline" : "sidebar")}
+        className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-full shadow-lg text-sm font-medium text-stone-600 hover:bg-stone-50 transition-all"
+      >
+        {viewMode === "sidebar" ? (
+          <>
+            <PanelRightClose className="w-4 h-4" />
+            Focus Mode
+          </>
+        ) : (
+          <>
+            <PanelRight className="w-4 h-4" />
+            Sidebar
+          </>
+        )}
+      </button>
     </div>
   );
 }
