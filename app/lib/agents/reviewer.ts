@@ -22,10 +22,10 @@ RULES:
 1. quote = exact text copied from the document (will be used for indexOf matching)
 2. message = one sentence, clear explanation of the improvement.
 3. suggestion = THE FIX. You MUST provide a concrete replacement for every single issue. No empty suggestions.
-4. Generate 10-30 comments.
-5. Keep quotes short (3-10 words) to ensure robust matching.
-6. No "praise" comments. Only actionable improvements.
-7. No markdown, no meta commentary.`,
+4. category = 'grammar' (errors), 'clarity' (confusing/wordy), or 'style' (tone/impact).
+5. Generate 10-30 comments.
+6. Keep quotes short (3-10 words) to ensure robust matching.
+7. No "praise" comments. Only actionable improvements.`,
       prompt: `${focusNote}
 
 DOCUMENT:
@@ -33,7 +33,7 @@ DOCUMENT:
 ${document}
 """
 
-Return JSON with comments array. Every comment must have a suggestion.`,
+Return JSON with comments array. Every comment must have a suggestion and category.`,
     });
 
     if (!result.output?.comments) {

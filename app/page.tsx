@@ -54,36 +54,18 @@ export default function Home() {
     
     console.log("[processComments] Raw comments:", rawComments.length);
     
-    // Sort raw comments by length (longest quotes first) to handle sub-matches better? 
-    // Or just process sequentially.
-    // We need to track used ranges to handle duplicates correctly.
-    
     const usedIndices = new Set<number>();
 
     const processed = rawComments
       .map((c, i) => {
-        // Find all occurrences of the quote
         const quote = c.quote;
         let searchIdx = 0;
         let foundIdx = -1;
 
-        // Try to find an occurrence that hasn't been heavily overlapped yet
-        // Simple heuristic: just find the first one that matches
-        // Ideally we'd map them 1:1 if there are multiple same quotes
-        
-        // For v1: Find the first occurrence after the *previous* comment's position? 
-        // No, comments come in arbitrary order.
-        
-        // Better: Find ALL occurrences, pick one that isn't taken.
         while (true) {
           const idx = content.indexOf(quote, searchIdx);
           if (idx === -1) break;
           
-          // Check if this start index is already "claimed" by another exact same quote comment?
-          // For now, let's just pick the first one. 
-          // If we want to handle 2 comments on same line with same quote... complex.
-          
-          // Let's at least try to find *unique* positions for identical quotes if possible.
           const key = idx; 
           if (!usedIndices.has(key)) {
             foundIdx = idx;
@@ -93,14 +75,11 @@ export default function Home() {
           searchIdx = idx + 1;
         }
 
-        // Fallback: if all occurrences taken (or none found), pick the first one again or fail
         if (foundIdx === -1) {
-           // Reset and just take the first one even if used
            foundIdx = content.indexOf(quote);
         }
 
         if (foundIdx === -1) {
-          console.log(`[processComments] MISS - quote not found: "${quote.slice(0, 20)}..."`);
           return null;
         }
 
@@ -109,12 +88,12 @@ export default function Home() {
           quote: c.quote,
           message: c.message,
           suggestion: c.suggestion ?? null,
+          category: c.category || "style",
           startIndex: foundIdx,
           endIndex: foundIdx + c.quote.length,
         };
       })
       .filter((c): c is Comment => c !== null)
-      // Sort by start index so they flow naturally
       .sort((a, b) => a.startIndex - b.startIndex);
 
     console.log("[processComments] Processed comments:", processed.length);
@@ -199,14 +178,6 @@ export default function Home() {
     end: c.endIndex, 
     id: c.id,
   }));
-
-  // Debug: log highlight ranges when they change
-  useEffect(() => {
-    if (highlightRanges.length > 0) {
-      console.log("[highlightRanges]", highlightRanges);
-      console.log("[content length]", content.length);
-    }
-  }, [highlightRanges, content.length]);
 
   const showSidebar = conversation.length > 0;
 
