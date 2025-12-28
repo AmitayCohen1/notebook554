@@ -158,6 +158,23 @@ export default function Home() {
         hasAnalyzed={showSidebar} 
       />
 
+      {/* Floating "Get feedback" button */}
+      {!showSidebar && content.trim() && (
+        <button
+          onClick={() => sendMessage("Please review my document.", true)}
+          disabled={isLoading}
+          className="fixed bottom-8 right-8 z-50 flex items-center gap-2.5 px-5 py-3 bg-[hsl(var(--accent))] text-[hsl(var(--bg-deep))] text-sm font-semibold rounded-full hover:scale-105 transition-smooth active:scale-95 disabled:opacity-60 shadow-lg animate-fade-up"
+          style={{ boxShadow: '0 4px 24px hsl(var(--accent) / 0.4)' }}
+        >
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Sparkles className="w-4 h-4" />
+          )}
+          <span>Get feedback</span>
+        </button>
+      )}
+
       <div className="pt-12 h-screen flex">
         <main className="flex-1 overflow-y-auto scrollbar-minimal writing-zone">
           <div className="max-w-3xl mx-auto px-8 py-16">
@@ -171,27 +188,10 @@ export default function Home() {
               />
             </div>
 
-            {!showSidebar && content.trim() && (
-              <div className="mt-16 flex justify-center animate-fade-up" style={{ animationDelay: '200ms' }}>
-                <button
-                  onClick={() => sendMessage("Please review my document.", true)}
-                  disabled={isLoading}
-                  className="group flex items-center gap-3 px-6 py-3 bg-[hsl(var(--accent))] text-[hsl(var(--bg-deep))] text-sm font-semibold rounded-full hover:scale-[1.02] transition-smooth active:scale-[0.98] disabled:opacity-60 glow"
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="w-4 h-4" />
-                  )}
-                  <span>Get feedback</span>
-                </button>
-              </div>
-            )}
-
-            {!content.trim() && (
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-up" style={{ animationDelay: '300ms' }}>
-                <p className="text-xs text-[hsl(var(--text-faint))] tracking-wide">
-                  Just start writing
+{!content.trim() && (
+              <div className="mt-32 text-center animate-fade-up">
+                <p className="text-sm text-[hsl(var(--text-muted))]">
+                  Start writing to get feedback
                 </p>
               </div>
             )}
