@@ -71,7 +71,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-... rest of file ...
 
         {/* The "Consumer" Value Section */}
         <section className="py-32 px-6 border-t border-white/3">

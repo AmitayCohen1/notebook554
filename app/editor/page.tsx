@@ -219,6 +219,8 @@ export default function Home() {
   };
 
   const dismissComment = (commentId: string) => {
+    const comment = allComments.find(c => c.id === commentId);
+    if (comment) track("suggestion_dismiss", { category: comment.category });
     const remaining = allComments.filter(c => c.id !== commentId && c.startIndex !== -1);
     
     setConversation(prev => prev.map(item => {
