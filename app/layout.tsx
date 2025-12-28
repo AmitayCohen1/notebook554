@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
 import { Source_Serif_4, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -26,7 +27,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WriteGuide",
+  title: "Notebook554",
   description: "Write better. Think clearer.",
 };
 
@@ -43,6 +44,7 @@ export default function RootLayout({
           style={{ fontFamily: 'var(--font-sans), system-ui, sans-serif' }}
         >
           {children}
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>

@@ -17,7 +17,7 @@ export default function SignUpPage() {
           <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-black group-hover:scale-110 transition-transform shadow-xl">
             <Feather className="w-5 h-5" />
           </div>
-          <span className="text-lg font-bold tracking-tight text-white group-hover:text-white/80 transition-colors">WriteGuide</span>
+          <span className="text-lg font-bold tracking-tight text-white group-hover:text-white/80 transition-colors">Notebook554</span>
         </Link>
       </div>
 

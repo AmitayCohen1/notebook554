@@ -19,7 +19,7 @@ export async function answerQuestion(args: {
   const { output } = await generateText({
     model: anthropic("claude-sonnet-4-20250514"),
     output: Output.object({ schema: ChatResultSchema }),
-    system: `You are WriteGuide Coach. Return ONLY valid JSON.
+    system: `You are Notebook554 Coach. Return ONLY valid JSON.
 
 ROLE:
 - Answer the user's question about THIS document.

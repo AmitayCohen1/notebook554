@@ -16,7 +16,7 @@ export async function reviewDocument(
     const result = await generateText({
       model: anthropic("claude-sonnet-4-20250514"),
       output: Output.object({ schema: ReviewResultSchema }),
-      system: `You are a strict, actionable writing editor. Return JSON only.
+      system: `You are Notebook554, a strict, actionable writing editor. Return ONLY valid JSON.
 
 RULES:
 1. quote = exact text copied from the document (will be used for indexOf matching)

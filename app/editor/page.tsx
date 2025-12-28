@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
+import { track } from "@vercel/analytics";
 import { Header } from "../components/Header";
 import { Editor } from "../components/writing/Editor";
 import { FeedbackSidebar } from "../components/feedback/FeedbackSidebar";
@@ -38,6 +39,7 @@ export default function Home() {
       try {
         const title = content.split('\n')[0].substring(0, 50) || "Untitled Document";
         await saveDocument(content, title, documentId || undefined);
+        track("document_auto_save", { wordCount: content.split(/\s+/).length });
       } catch (err) {
         console.error("Failed to auto-save:", err);
       } finally {
@@ -135,6 +137,13 @@ export default function Home() {
   const sendMessage = async (messageContent: string, isAnalyze = false) => {
     if (!messageContent.trim()) return;
     setIsLoading(true);
+    
+    if (isAnalyze) {
+      track("audit_start", { source: messageContent === "Review my text." ? "header" : "chat" });
+    } else {
+      track("chat_sent");
+    }
+
     if (!isAnalyze) {
       setConversation(prev => [...prev, { type: 'user', id: `user-${Date.now()}`, content: messageContent }]);
     }
@@ -195,6 +204,7 @@ export default function Home() {
 
   const applyEdit = (comment: Comment) => {
     if (!comment.suggestion) return;
+    track("suggestion_apply", { category: comment.category });
     const newContent = content.substring(0, comment.startIndex) + comment.suggestion + content.substring(comment.endIndex);
     setContent(newContent);
     

@@ -26,7 +26,7 @@ export default function LandingPage() {
             {/* Left: Content */}
             <div className="space-y-10 animate-in fade-in slide-in-from-left-10 duration-1000">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/3 border border-white/8 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">
-                The Professional Writing Studio
+                Notebook554
               </div>
               
               <h1 className="text-6xl md:text-8xl xl:text-9xl font-bold tracking-tight leading-[0.85] text-white">
@@ -123,12 +123,12 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black">
               <PenTool className="w-4 h-4" />
             </div>
-            <span className="text-sm font-bold tracking-tight">WriteGuide Studio</span>
+            <span className="text-sm font-bold tracking-tight">Notebook554 Studio</span>
           </div>
           
           <div className="flex gap-12 text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">
             <Link href="#" className="hover:text-white transition-colors">Process</Link>
-            <Link href="#" className="hover:text-white transition-colors">Journal</Link>
+            <Link href="#" className="hover:text-white transition-colors">Notebook554</Link>
             <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
           </div>
           
@@ -181,7 +181,7 @@ function MockEditorAnimation() {
 
   return (
     <div className="w-full max-w-xl mx-auto">
-      <div className="relative p-1 bg-linear-to-b from-white/10 to-transparent rounded-[32px] shadow-2xl overflow-hidden">
+      <div className="relative p-1 bg-linear-to-b from-white/10 to-transparent rounded-[32px] shadow-2xl">
         <div className="relative bg-[#0A0A0A] rounded-[30px] border border-white/5 p-10 min-h-[400px] flex flex-col justify-center">
           {/* Editor Content */}
           <div className="font-serif text-2xl md:text-3xl leading-relaxed text-white/90">

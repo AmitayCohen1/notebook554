@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black group-hover:scale-110 transition-transform shadow-xl">
             <Feather className="w-4 h-4" />
           </div>
-          <span className="text-sm font-bold tracking-tight text-white">WriteGuide</span>
+          <span className="text-sm font-bold tracking-tight text-white">Notebook554</span>
         </Link>
 
         <SignedIn>
