@@ -69,14 +69,26 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onAnalyze}
               disabled={isAnalyzing}
-              className="flex items-center gap-2 px-4 py-1.5 bg-white text-black text-xs font-bold rounded-full hover:bg-white/90 transition-all disabled:opacity-50"
+              className={`
+                relative flex items-center gap-2 px-5 py-2 rounded-full font-bold text-xs transition-all overflow-hidden
+                ${isAnalyzing 
+                  ? "bg-indigo-600/20 text-indigo-400 border border-indigo-500/30" 
+                  : "bg-white text-black hover:bg-white/90 shadow-lg"
+                }
+              `}
             >
               {isAnalyzing ? (
-                <div className="w-3 h-3 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                <>
+                  <div className="absolute inset-0 bg-indigo-500/10 animate-pulse" />
+                  <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin shrink-0" />
+                  <span className="relative">Analyzing Prose...</span>
+                </>
               ) : (
-                <Sparkles className="w-3 h-3" />
+                <>
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                  <span>Check Writing</span>
+                </>
               )}
-              Check Writing
             </button>
           )}
 

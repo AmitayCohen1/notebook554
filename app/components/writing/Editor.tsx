@@ -17,6 +17,7 @@ interface EditorProps {
   activeCommentId: string | null;
   onCommentClick: (id: string, position: { x: number; y: number }) => void;
   onActiveMarkPositionChange?: (position: { x: number; y: number }) => void;
+  isAnalyzing?: boolean;
 }
 
 const CategoryIcon = ({ category, isActive }: { category?: string; isActive: boolean }) => {
@@ -36,6 +37,7 @@ export const Editor: React.FC<EditorProps> = ({
   activeCommentId,
   onCommentClick,
   onActiveMarkPositionChange,
+  isAnalyzing = false,
 }) => {
   const activeMarkRef = useRef<HTMLElement | null>(null);
 
@@ -107,7 +109,7 @@ export const Editor: React.FC<EditorProps> = ({
               absolute -top-6 left-0 z-20 flex items-center justify-center w-6 h-6 rounded-full cursor-pointer transition-all
               ${isActive 
                 ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] scale-110" 
-                : "bg-stone-800 text-indigo-400 border border-white/20 shadow-sm hover:bg-stone-700 hover:scale-105"
+                : "bg-stone-800 text-indigo-400 border border-white/10 shadow-sm hover:bg-stone-700 hover:scale-105"
               }
             `}
             style={{ pointerEvents: "auto" }}
@@ -155,9 +157,17 @@ export const Editor: React.FC<EditorProps> = ({
 
   return (
     <div
-      className="grid min-h-[800px]"
+      className="grid min-h-[800px] relative"
       style={{ gridTemplateColumns: "1fr", gridTemplateRows: "1fr" }}
     >
+      {/* Scanning Overlay */}
+      {isAnalyzing && (
+        <div className="absolute inset-0 z-30 overflow-hidden pointer-events-none rounded-2xl">
+          <div className="scanning-overlay" />
+          <div className="scanning-beam" />
+        </div>
+      )}
+
       {/* Layer 1: Visible Text + Highlights + Icons */}
       <div
         className="select-none"
