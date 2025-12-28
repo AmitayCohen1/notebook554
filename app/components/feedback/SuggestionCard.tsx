@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Check, X, AlertCircle, Lightbulb, Palette, Layout } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 export type CommentKind = "insert" | "rewrite" | "praise";
 export type CommentCategory = "thesis" | "structure" | "clarity" | "logic" | "transitions" | "examples" | "tone" | "style" | "consistency" | "grammar";
@@ -32,61 +32,42 @@ const getCategoryConfig = (category: CommentCategory) => {
     case "grammar":
     case "consistency":
       return { 
-        label: category,
-        color: "var(--category-grammar)",
-        softColor: "var(--category-grammar-soft)",
-        icon: AlertCircle,
-        highlight: "hsl(var(--category-grammar-soft)) hsl(var(--category-grammar))"
+        color: "var(--cat-grammar)",
+        softColor: "var(--cat-grammar-soft)",
       };
     case "clarity":
     case "logic":
     case "thesis":
       return { 
-        label: category,
-        color: "var(--category-clarity)",
-        softColor: "var(--category-clarity-soft)",
-        icon: Lightbulb,
-        highlight: "hsl(var(--category-clarity-soft)) hsl(var(--category-clarity))"
+        color: "var(--cat-clarity)",
+        softColor: "var(--cat-clarity-soft)",
       };
     case "style":
     case "tone":
       return { 
-        label: category,
-        color: "var(--category-style)",
-        softColor: "var(--category-style-soft)",
-        icon: Palette,
-        highlight: "hsl(var(--category-style-soft)) hsl(var(--category-style))"
+        color: "var(--cat-style)",
+        softColor: "var(--cat-style-soft)",
       };
     case "structure":
     case "transitions":
     case "examples":
       return { 
-        label: category,
-        color: "var(--category-structure)",
-        softColor: "var(--category-structure-soft)",
-        icon: Layout,
-        highlight: "hsl(var(--category-structure-soft)) hsl(var(--category-structure))"
+        color: "var(--cat-structure)",
+        softColor: "var(--cat-structure-soft)",
       };
     default:
       return { 
-        label: category,
-        color: "var(--warm-500)",
-        softColor: "var(--warm-100)",
-        icon: Lightbulb,
-        highlight: "hsl(var(--warm-100)) hsl(var(--warm-500))"
+        color: "var(--text-muted)",
+        softColor: "var(--bg-hover)",
       };
   }
 };
 
-// Export for Editor component to use
+// Export for Editor compatibility
 export const getCategoryStyles = (category: CommentCategory) => {
   const config = getCategoryConfig(category);
   return {
-    bg: `bg-[hsl(${config.softColor})]`,
-    text: `text-[hsl(${config.color})]`,
-    border: `border-[hsl(${config.color}/0.3)]`,
-    badge: `bg-[hsl(${config.softColor})] text-[hsl(${config.color})]`,
-    highlight: `bg-[hsl(${config.softColor})] border-[hsl(${config.color}/0.4)]`,
+    highlight: `bg-[hsl(${config.softColor})] border-[hsl(${config.color})]`,
   };
 };
 
@@ -98,92 +79,81 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
   onDismiss,
 }) => {
   const config = getCategoryConfig(comment.category);
-  const Icon = config.icon;
 
   return (
     <div
       onClick={onClick}
-      className={`group relative rounded-xl transition-smooth cursor-pointer overflow-hidden
+      className={`group relative rounded-lg transition-smooth cursor-pointer overflow-hidden
         ${isActive 
-          ? "bg-[hsl(var(--surface-0))] ring-2 ring-[hsl(var(--accent-primary))] card-shadow-hover" 
-          : "bg-[hsl(var(--surface-0))] border border-[hsl(var(--border))] hover:border-[hsl(var(--warm-300))] card-shadow hover:card-shadow-hover"
+          ? "bg-[hsl(var(--bg-elevated))] ring-1 ring-[hsl(var(--accent))]" 
+          : "bg-[hsl(var(--bg-elevated))] border border-[hsl(var(--border))] hover:border-[hsl(var(--text-muted)/0.3)]"
         }`}
     >
-      {/* Category color accent */}
+      {/* Color indicator */}
       <div 
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+        className="absolute left-0 top-0 bottom-0 w-0.5"
         style={{ backgroundColor: `hsl(${config.color})` }}
       />
       
-      <div className="p-4 pl-5">
+      <div className="p-3 pl-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div 
-              className="w-5 h-5 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: `hsl(${config.softColor})` }}
-            >
-              <Icon className="w-3 h-3" style={{ color: `hsl(${config.color})` }} />
-            </div>
             <span 
-              className="text-[10px] font-bold uppercase tracking-wider"
+              className="text-[10px] font-semibold uppercase tracking-wider"
               style={{ color: `hsl(${config.color})` }}
             >
               {comment.category}
             </span>
             {comment.impact === 'high' && (
-              <span className="text-[9px] font-bold text-white bg-[hsl(var(--accent-primary))] px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+              <span className="text-[9px] font-bold text-[hsl(var(--bg-deep))] bg-[hsl(var(--accent))] px-1.5 py-0.5 rounded uppercase tracking-wide">
                 Important
               </span>
             )}
           </div>
           <button 
             onClick={(e) => { e.stopPropagation(); onDismiss(comment.id); }}
-            className="text-[hsl(var(--warm-300))] hover:text-[hsl(var(--warm-600))] opacity-0 group-hover:opacity-100 transition-smooth p-1 hover:bg-[hsl(var(--warm-100))] rounded-lg"
+            className="text-[hsl(var(--text-faint))] hover:text-[hsl(var(--text-secondary))] opacity-0 group-hover:opacity-100 transition-smooth p-1 hover:bg-[hsl(var(--bg-hover))] rounded"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </div>
 
-        {/* Comment text */}
-        <p className={`text-[13px] leading-relaxed transition-colors
-          ${isActive ? "text-[hsl(var(--warm-800))] font-medium" : "text-[hsl(var(--warm-600))]"}`}
-        >
+        {/* Comment */}
+        <p className={`text-[13px] leading-relaxed ${isActive ? "text-[hsl(var(--text-primary))]" : "text-[hsl(var(--text-secondary))]"}`}>
           {comment.comment}
         </p>
 
-        {/* Expanded content when active */}
+        {/* Expanded */}
         {isActive && comment.suggestion && (
-          <div className="mt-4 space-y-3 animate-fade-in">
-            {/* Suggestion box */}
+          <div className="mt-3 space-y-3 animate-fade-up">
             <div 
-              className="p-3.5 rounded-lg border"
+              className="p-3 rounded-lg border"
               style={{ 
                 backgroundColor: `hsl(${config.softColor})`,
-                borderColor: `hsl(${config.color}/0.2)`
+                borderColor: `hsl(${config.color} / 0.3)`
               }}
             >
               <p 
-                className="text-[10px] font-bold mb-2 uppercase tracking-wider"
+                className="text-[10px] font-semibold mb-1.5 uppercase tracking-wider"
                 style={{ color: `hsl(${config.color})` }}
               >
-                Suggested revision
+                Suggestion
               </p>
               <p 
-                className="text-[14px] text-[hsl(var(--warm-800))] italic leading-relaxed"
+                className="text-[14px] text-[hsl(var(--text-primary))] italic leading-relaxed"
                 style={{ fontFamily: 'var(--font-serif), Georgia, serif' }}
               >
                 "{comment.suggestion}"
               </p>
             </div>
             
-            {/* Apply button */}
             <button
               onClick={(e) => { e.stopPropagation(); onApply(comment); }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-r from-[hsl(var(--accent-primary))] to-[hsl(var(--accent-primary-hover))] text-white rounded-lg text-xs font-semibold hover:shadow-md transition-smooth active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[hsl(var(--accent))] text-[hsl(var(--bg-deep))] rounded-lg text-xs font-semibold hover:brightness-110 transition-smooth active:scale-[0.98]"
             >
               <Check className="w-3.5 h-3.5" />
-              Apply suggestion
+              Apply
             </button>
           </div>
         )}
