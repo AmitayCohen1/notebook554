@@ -153,25 +153,58 @@ export default function Home() {
     }
   };
 
+  const openNextComment = (currentId: string, remainingComments: Comment[]) => {
+    if (viewMode !== "inline" || remainingComments.length === 0) {
+      setActiveCommentId(null);
+      setPopupPosition(null);
+      return;
+    }
+    
+    // Find the next comment (first one remaining, or next by position)
+    const currentIdx = allComments.findIndex(c => c.id === currentId);
+    const nextComment = remainingComments.find(c => {
+      const idx = allComments.findIndex(ac => ac.id === c.id);
+      return idx > currentIdx;
+    }) || remainingComments[0];
+    
+    if (nextComment) {
+      setActiveCommentId(nextComment.id);
+      // Use a centered position since we don't have the element ref
+      setPopupPosition({ x: window.innerWidth / 2 - 160, y: 200 });
+    } else {
+      setActiveCommentId(null);
+      setPopupPosition(null);
+    }
+  };
+
   const applyEdit = (comment: Comment) => {
     if (!comment.suggestion) return;
     const newContent = content.substring(0, comment.startIndex) + comment.suggestion + content.substring(comment.endIndex);
     setContent(newContent);
+    
+    // Get remaining comments after this one is removed
+    const remaining = allComments.filter(c => c.id !== comment.id && c.startIndex !== -1);
+    
     setConversation(prev => prev.map(item => {
       if (item.type !== 'feedback') return item;
       return { ...item, comments: item.comments.filter(c => c.id !== comment.id) };
     }));
-    setActiveCommentId(null);
-    setPopupPosition(null);
+    
+    // Open the next comment
+    openNextComment(comment.id, remaining);
   };
 
   const dismissComment = (commentId: string) => {
+    // Get remaining comments after this one is removed
+    const remaining = allComments.filter(c => c.id !== commentId && c.startIndex !== -1);
+    
     setConversation(prev => prev.map(item => {
       if (item.type !== 'feedback') return item;
       return { ...item, comments: item.comments.filter(c => c.id !== commentId) };
     }));
-    setActiveCommentId(null);
-    setPopupPosition(null);
+    
+    // Open the next comment
+    openNextComment(commentId, remaining);
   };
 
   const handleCommentClick = (id: string, position: { x: number; y: number }) => {
@@ -241,6 +274,8 @@ export default function Home() {
         <InlinePopup
           comment={activeComment}
           position={popupPosition}
+          currentIndex={allComments.findIndex(c => c.id === activeComment.id) + 1}
+          totalCount={allComments.filter(c => c.startIndex !== -1).length}
           onApply={applyEdit}
           onDismiss={dismissComment}
           onClose={() => { setActiveCommentId(null); setPopupPosition(null); }}
