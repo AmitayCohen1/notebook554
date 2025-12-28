@@ -26,6 +26,7 @@ export default function Home() {
   const [chatInput, setChatInput] = useState("");
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"sidebar" | "inline">("inline");
+  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -183,6 +184,7 @@ export default function Home() {
   const openNextComment = (currentId: string, remainingComments: Comment[]) => {
     if (viewMode !== "inline" || remainingComments.length === 0) {
       setActiveCommentId(null);
+      setPopupPosition(null);
       return;
     }
     
@@ -196,6 +198,7 @@ export default function Home() {
       setActiveCommentId(nextComment.id);
     } else {
       setActiveCommentId(null);
+      setPopupPosition(null);
     }
   };
 
@@ -228,8 +231,11 @@ export default function Home() {
     openNextComment(commentId, remaining);
   };
 
-  const handleCommentClick = (id: string) => {
+  const handleCommentClick = (id: string, position: { x: number; y: number }) => {
     setActiveCommentId(id);
+    if (viewMode === "inline") {
+      setPopupPosition(position);
+    }
   };
 
   const highlightRanges = allComments
@@ -253,23 +259,36 @@ export default function Home() {
 
       <div className="flex-1 flex pt-14 overflow-hidden">
         {/* Editor Container */}
-        <main className={`h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-4 pb-[50vh] transition-all duration-500 ${viewMode === "sidebar" ? "w-2/3" : "w-full"}`}>
-          {/* Paper Sheet */}
-          <div className="w-full max-w-4xl bg-[hsl(var(--bg-sheet))] shadow-[0_4px_40px_rgba(0,0,0,0.4)] border border-white/5 px-16 py-16 relative transition-all duration-500">
-            <Editor
-              content={content}
-              setContent={setContent}
-              highlightRanges={highlightRanges}
-              activeCommentId={activeCommentId}
-              onCommentClick={handleCommentClick}
-              isAnalyzing={isLoading}
-            />
-            
-            {!content.trim() && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none text-center">
-                <p className="text-4xl font-serif italic text-white">Write something.</p>
+        <main className={`h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-24 pb-[50vh] transition-all duration-500 notebook-bg ${viewMode === "sidebar" ? "w-2/3" : "w-full"}`}>
+          {/* Sliced Page Layout */}
+          <div className="flex flex-col gap-16 w-full items-center">
+            {/* Page 1 */}
+            <div className="w-full max-w-4xl bg-[hsl(var(--bg-sheet))] shadow-[0_4px_60px_rgba(0,0,0,0.5)] border border-white/5 px-20 py-24 relative transition-all duration-500 rounded-lg">
+              <div className="absolute -top-10 left-0 text-[10px] font-bold tracking-widest text-white/20 uppercase">
+                Sheet 01
               </div>
-            )}
+              <Editor
+                content={content}
+                setContent={setContent}
+                highlightRanges={highlightRanges}
+                activeCommentId={activeCommentId}
+                onCommentClick={handleCommentClick}
+                onActiveMarkPositionChange={(pos) => setPopupPosition(pos)}
+                isAnalyzing={isLoading}
+              />
+              
+              {!content.trim() && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none text-center">
+                  <p className="text-4xl font-serif italic text-white">Write something.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Decorative Page Peeks */}
+            <div className="space-y-4 w-full max-w-4xl opacity-20 pb-20">
+              <div className="w-full h-4 bg-[hsl(var(--bg-sheet))] rounded-t-lg shadow-2xl border-x border-t border-white/5" />
+              <div className="w-full h-4 bg-[hsl(var(--bg-sheet))] rounded-t-lg shadow-2xl border-x border-t border-white/5 mx-auto max-w-[98%]" />
+            </div>
           </div>
         </main>
 
@@ -279,7 +298,7 @@ export default function Home() {
             <FeedbackSidebar
               conversation={conversation}
               activeCommentId={activeCommentId}
-              onCommentClick={handleCommentClick}
+              onCommentClick={(id) => handleCommentClick(id, { x: 0, y: 0 })}
               onApply={applyEdit}
               onDismiss={dismissComment}
               onRefresh={() => sendMessage("Review my text.", true)}
@@ -294,14 +313,15 @@ export default function Home() {
       </div>
 
       {/* Inline Popup */}
-      {viewMode === "inline" && activeComment && (
+      {viewMode === "inline" && activeComment && popupPosition && (
         <InlinePopup
           comment={activeComment}
+          position={popupPosition}
           currentIndex={allComments.findIndex(c => c.id === activeComment.id) + 1}
           totalCount={allComments.filter(c => c.startIndex !== -1).length}
           onApply={applyEdit}
           onDismiss={dismissComment}
-          onClose={() => setActiveCommentId(null)}
+          onClose={() => { setActiveCommentId(null); setPopupPosition(null); }}
         />
       )}
 
