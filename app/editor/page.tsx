@@ -26,7 +26,8 @@ export default function Home() {
   const [chatInput, setChatInput] = useState("");
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"sidebar" | "inline">("inline");
-
+  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
+  
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-save logic
@@ -278,8 +279,11 @@ export default function Home() {
     openNextComment(commentId, remaining);
   };
 
-  const handleCommentClick = (id: string) => {
+  const handleCommentClick = (id: string, position: { x: number; y: number }) => {
     setActiveCommentId(id);
+    if (viewMode === "inline") {
+      setPopupPosition(position);
+    }
   };
 
   const highlightRanges = allComments

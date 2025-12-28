@@ -15,7 +15,8 @@ interface EditorProps {
   setContent: (content: string) => void;
   highlightRanges: Range[];
   activeCommentId: string | null;
-  onCommentClick: (id: string) => void;
+  onCommentClick: (id: string, position: { x: number; y: number }) => void;
+  onActiveMarkPositionChange?: (position: { x: number; y: number }) => void;
   isAnalyzing?: boolean;
 }
 
@@ -29,23 +30,41 @@ export const Editor: React.FC<EditorProps> = ({
   highlightRanges,
   activeCommentId,
   onCommentClick,
+  onActiveMarkPositionChange,
   isAnalyzing = false,
 }) => {
   const activeMarkRef = useRef<HTMLElement | null>(null);
 
-  // Auto-scroll to active mark
+  // Auto-scroll AND update position for the popup
   useEffect(() => {
     if (activeCommentId && activeMarkRef.current) {
+      // 1. Scroll into view
       activeMarkRef.current.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
+
+      // 2. Wait for scroll/layout, then report position
+      const timer = setTimeout(() => {
+        if (!activeMarkRef.current) return;
+        
+        const rect = activeMarkRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          onActiveMarkPositionChange?.({ 
+            x: rect.left + rect.width / 2, // Center of mark
+            y: rect.bottom 
+          });
+        }
+      }, 150);
+
+      return () => clearTimeout(timer);
     }
-  }, [activeCommentId]);
+  }, [activeCommentId, onActiveMarkPositionChange]);
 
   const handleIconClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    onCommentClick(id);
+    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    onCommentClick(id, { x: rect.left, y: rect.bottom });
   };
 
   const renderHighlights = () => {

@@ -22,10 +22,7 @@ RULES:
 1. quote = exact text copied from the document. Can be a few words, a full sentence, or a whole paragraph.
 2. message = EXTREMELY CONCISE reason (max 4 words).
 3. suggestion = THE FIX. You MUST provide a concrete replacement.
-4. category = ONE WORD describing the type of issue (e.g., Structure, Flow, Logic, Grammar).
-5. Generate a mix of small technical fixes and larger structural rewrites.
-6. Ensure the quote is unique enough to be found exactly in the document.
-7. No "praise" comments. Only actionable improvements.`,
+4. category = ONE WORD describing the type of issue.`,
       prompt: `${focusNote}
 
 DOCUMENT:
