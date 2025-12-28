@@ -28,13 +28,13 @@ export default function LandingPage() {
             </div>
             
             <h1 className="text-7xl md:text-[120px] font-bold tracking-tight leading-[0.85] text-white">
-              Write with <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-b from-white to-white/20 italic">unrivaled</span> clarity.
+              Write better, <br />
+              <span className="text-transparent bg-clip-text bg-linear-to-b from-white to-white/20 italic">faster.</span>
             </h1>
             
             <p className="max-w-xl mx-auto text-lg md:text-xl text-white/40 leading-relaxed font-medium">
-              An immersive editor that thinks with you. <br />
-              Get surgical feedback, refine your voice, and publish your best work yet.
+              A simple editor that helps you clear up your thoughts. <br />
+              Get instant feedback so you never have to second-guess a sentence again.
             </p>
 
             <div className="flex flex-col items-center gap-6 pt-6">
@@ -70,18 +70,18 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
               <ValueProp 
                 icon={<Zap className="w-5 h-5 text-indigo-400" />}
-                title="Instant Audit"
-                description="We scan every syllable for friction. You get a list of precision edits to make your writing hit harder."
+                title="Instant Feedback"
+                description="Get sentence-by-sentence suggestions to improve your flow, grammar, and impact as you type."
               />
               <ValueProp 
                 icon={<PenTool className="w-5 h-5 text-indigo-400" />}
-                title="Your Voice, Refined"
-                description="Our AI doesn't write for you—it helps you write better. Preserve your voice while removing the clutter."
+                title="Your Voice, Only Better"
+                description="We don't rewrite your work. We just help you find the clearest version of your own unique words."
               />
               <ValueProp 
                 icon={<Eye className="w-5 h-5 text-indigo-400" />}
-                title="Pure Focus"
-                description="A cinematic workspace designed to disappear. No toolbars, no popups, just you and your thoughts."
+                title="Total Focus"
+                description="A clean, cinematic workspace designed for deep work. No clutter, no toolbars, just your thoughts."
               />
             </div>
           </div>
