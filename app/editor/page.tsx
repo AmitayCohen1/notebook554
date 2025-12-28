@@ -269,6 +269,7 @@ export default function Home() {
               activeCommentId={activeCommentId}
               onCommentClick={handleCommentClick}
               onActiveMarkPositionChange={(pos) => setPopupPosition(pos)}
+              isAnalyzing={isLoading}
             />
             
             {!content.trim() && (

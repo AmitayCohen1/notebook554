@@ -42,8 +42,11 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`group relative flex flex-col transition-all duration-200 cursor-pointer border-b border-white/5 last:border-0
-        ${isActive ? "bg-white/5 px-6 py-8 -mx-6 rounded-xl" : "px-0 py-5 hover:bg-white/5"}`}
+      className={`group relative flex flex-col transition-all duration-300 cursor-pointer border-b border-white/5 last:border-0
+        ${isActive 
+          ? "bg-white/5 px-6 py-8 -mx-6 rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.3)] ring-1 ring-white/10" 
+          : "px-0 py-6 hover:bg-white/5 hover:px-4 hover:-mx-4 hover:rounded-xl"
+        }`}
     >
       <div className="flex items-center justify-between mb-2">
         <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${isActive ? "text-indigo-400" : "text-white/30"}`}>

@@ -88,6 +88,37 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
 
             return null;
           })}
+
+          {isLoading && (
+            <div className="space-y-8 animate-in fade-in duration-500 pt-4">
+              {/* Cinematic Audit HUD */}
+              <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-6 space-y-4 shadow-[0_0_20px_rgba(0,0,0,0.2)]">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_hsl(var(--accent))]" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-indigo-400">Audit in Progress</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-500 w-1/2 animate-[loading_2s_ease-in-out_infinite]" />
+                  </div>
+                  <p className="text-xs text-white/40 font-medium italic">Scanning for clarity and flow...</p>
+                </div>
+              </div>
+
+              {/* Skeleton Cards */}
+              {[1, 2].map((i) => (
+                <div key={i} className="space-y-4 opacity-20 px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded-full bg-white/10" />
+                    <div className="h-2 w-20 bg-white/10 rounded-full" />
+                  </div>
+                  <div className="h-4 w-3/4 bg-white/10 rounded-full" />
+                  <div className="h-24 w-full bg-white/5 rounded-2xl border border-white/5" />
+                </div>
+              ))}
+            </div>
+          )}
+
           <div ref={chatEndRef} />
         </div>
       </div>

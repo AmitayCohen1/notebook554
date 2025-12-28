@@ -153,11 +153,12 @@ export const Editor: React.FC<EditorProps> = ({
     border: "none",
     outline: "none",
     background: "transparent",
+    paddingTop: "24px",
   };
 
   return (
     <div
-      className="grid min-h-[800px] relative"
+      className="grid w-full h-full min-h-[800px] relative"
       style={{ gridTemplateColumns: "1fr", gridTemplateRows: "1fr" }}
     >
       {/* Scanning Overlay */}
@@ -170,12 +171,11 @@ export const Editor: React.FC<EditorProps> = ({
 
       {/* Layer 1: Visible Text + Highlights + Icons */}
       <div
-        className="select-none"
+        className="select-none h-full"
         style={{
           ...sharedStyles,
           gridArea: "1 / 1 / 2 / 2",
           color: "#e5e5e5", // Soft white
-          paddingTop: "24px",
           pointerEvents: "none",
         }}
       >
@@ -188,13 +188,12 @@ export const Editor: React.FC<EditorProps> = ({
         onChange={(e) => setContent(e.target.value)}
         placeholder="Start writing..."
         spellCheck={false}
-        className="resize-none"
+        className="resize-none h-full w-full"
         style={{
           ...sharedStyles,
           gridArea: "1 / 1 / 2 / 2",
           color: "transparent",
           caretColor: "#ffffff", // Bright white cursor
-          paddingTop: "24px",
         }}
       />
     </div>
