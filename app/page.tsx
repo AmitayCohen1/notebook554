@@ -24,7 +24,7 @@ export default function Home() {
     .filter((item): item is Extract<ConversationItem, { type: 'feedback' }> => item.type === 'feedback')
     .flatMap(item => item.comments);
 
-  // Sync scroll between sidebar and editor
+  // Sync sidebar scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
@@ -165,7 +165,7 @@ export default function Home() {
     .map(c => ({ start: c.startIndex, end: c.endIndex, id: c.id }));
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#F8F8F8] font-sans">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#F5F5F5]">
       <Header 
         wordCount={content.trim() ? content.trim().split(/\s+/).length : 0} 
         suggestionsCount={allComments.length} 
@@ -175,9 +175,10 @@ export default function Home() {
       />
 
       <div className="flex-1 flex pt-14 overflow-hidden">
-        {/* Editor Pane (60%) */}
-        <main className="w-3/5 h-full overflow-y-auto scrollbar-none flex justify-center py-12 px-12 border-r border-stone-200">
-          <div className="w-full max-w-2xl bg-white paper-shadow min-h-screen px-16 py-20 relative">
+        {/* Editor Container (Scrollable) */}
+        <main className="w-3/5 h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-16 pb-[50vh]">
+          {/* Paper Sheet */}
+          <div className="w-full max-w-2xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-stone-200 px-16 py-24 relative">
             <Editor
               content={content}
               setContent={setContent}
@@ -185,16 +186,17 @@ export default function Home() {
               activeCommentId={activeCommentId}
               onCommentClick={setActiveCommentId}
             />
+            
             {!content.trim() && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
-                <p className="text-4xl font-serif italic">Write...</p>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none text-center">
+                <p className="text-4xl font-serif italic">Type something.</p>
               </div>
             )}
           </div>
         </main>
 
-        {/* Sidebar Pane (40%) */}
-        <aside className="w-2/5 h-full bg-white">
+        {/* Sidebar Panel */}
+        <aside className="w-2/5 h-full bg-white border-l border-stone-200">
           <FeedbackSidebar
             conversation={conversation}
             activeCommentId={activeCommentId}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React from "react";
 
 interface Range {
   start: number;
@@ -23,51 +23,40 @@ export const Editor: React.FC<EditorProps> = ({
   activeCommentId,
   onCommentClick,
 }) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Sync heights
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [content]);
-
   const renderHighlights = () => {
-    // Add a trailing space to ensure the highlighter div has the same layout as textarea
-    const textToRender = content + (content.endsWith('\n') ? ' ' : '');
-    
-    if (highlightRanges.length === 0) return <span>{textToRender}</span>;
+    // Must match textarea content exactly, including trailing newline behavior
+    let textToRender = content || " "; // Ensure there's always at least a space
+    if (content.endsWith("\n")) textToRender = content + " ";
+
+    if (highlightRanges.length === 0) {
+      return <>{textToRender}</>;
+    }
 
     const parts: React.ReactNode[] = [];
     let lastEnd = 0;
-    
+
     const sortedRanges = [...highlightRanges]
-      .filter(r => r.start >= 0 && r.end > r.start && r.end <= content.length)
+      .filter((r) => r.start >= 0 && r.end > r.start && r.end <= content.length)
       .sort((a, b) => a.start - b.start);
 
     sortedRanges.forEach((range, i) => {
       if (range.start > lastEnd) {
-        parts.push(<span key={`t-${i}`}>{content.substring(lastEnd, range.start)}</span>);
+        parts.push(
+          <span key={`t-${i}`}>{content.substring(lastEnd, range.start)}</span>
+        );
       }
-      
+
       if (range.start < lastEnd) return;
 
       const isActive = activeCommentId === range.id;
-      
+
       parts.push(
         <mark
           key={`h-${range.id}`}
-          onClick={() => onCommentClick(range.id)}
-          className={`
-            relative cursor-pointer transition-all duration-200 rounded-sm
-            ${isActive 
-              ? "bg-indigo-600/20 border-b-2 border-indigo-600" 
-              : "bg-indigo-100/50 border-b border-indigo-200 hover:bg-indigo-100"
-            }
-          `}
-          style={{ color: 'transparent' }}
+          className={`rounded-sm ${
+            isActive ? "bg-indigo-200" : "bg-indigo-50"
+          }`}
+          style={{ color: "transparent" }}
         >
           {content.substring(range.start, range.end)}
         </mark>
@@ -79,45 +68,52 @@ export const Editor: React.FC<EditorProps> = ({
       parts.push(<span key="end">{textToRender.substring(lastEnd)}</span>);
     }
 
-    return parts;
+    return <>{parts}</>;
+  };
+
+  const sharedStyles: React.CSSProperties = {
+    fontFamily: "Georgia, serif",
+    fontSize: "20px",
+    lineHeight: "1.8",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+    padding: 0,
+    margin: 0,
+    border: "none",
+    outline: "none",
+    background: "transparent",
   };
 
   return (
-    <div className="grid w-full relative">
-      {/* 
-        This "ghost" div and the textarea occupy the exact same grid cell.
-        The ghost div sets the height of the container.
-      */}
+    <div
+      className="grid min-h-[800px]"
+      style={{ gridTemplateColumns: "1fr", gridTemplateRows: "1fr" }}
+    >
+      {/* Layer 1: Highlights (in flow, sets height) */}
       <div
-        className="col-start-1 row-start-1 whitespace-pre-wrap break-words pointer-events-none"
+        className="pointer-events-none select-none"
         style={{
-          fontFamily: 'var(--font-serif), Georgia, serif',
-          fontSize: '20px',
-          lineHeight: '1.8',
-          color: 'transparent',
-          padding: '0',
-          margin: '0',
-          minHeight: '800px',
+          ...sharedStyles,
+          gridArea: "1 / 1 / 2 / 2",
+          color: "transparent",
         }}
         aria-hidden="true"
       >
         {renderHighlights()}
       </div>
 
+      {/* Layer 2: Textarea (in same grid cell, overlays Layer 1) */}
       <textarea
-        ref={textareaRef}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Start writing..."
-        className="col-start-1 row-start-1 w-full bg-transparent resize-none outline-none border-none p-0 focus:ring-0 overflow-hidden"
+        spellCheck={false}
+        className="resize-none"
         style={{
-          fontFamily: 'var(--font-serif), Georgia, serif',
-          fontSize: '20px',
-          lineHeight: '1.8',
-          color: '#1a1a1a',
-          padding: '0',
-          margin: '0',
-          minHeight: '800px',
+          ...sharedStyles,
+          gridArea: "1 / 1 / 2 / 2",
+          color: "#1a1a1a",
+          caretColor: "#1a1a1a",
         }}
       />
     </div>
