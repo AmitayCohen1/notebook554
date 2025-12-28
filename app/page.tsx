@@ -215,26 +215,12 @@ export default function Home() {
       <Header 
         wordCount={wordCount} 
         suggestionsCount={allComments.length} 
-        hasAnalyzed={showSidebar} 
+        hasAnalyzed={showSidebar}
+        onAnalyze={() => sendMessage("Please review my document.", true)}
+        isAnalyzing={isLoading}
       />
 
-      {/* Floating "Get feedback" button */}
-      {!showSidebar && content.trim() && (
-          <button
-          onClick={() => sendMessage("Please review my document.", true)}
-          disabled={isLoading}
-          className="fixed bottom-10 right-10 z-50 flex items-center gap-3 px-6 py-4 bg-white text-black border border-stone-200 text-sm font-bold rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-105 hover:shadow-[0_8px_40px_rgba(0,0,0,0.16)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Sparkles className="w-4 h-4" />
-          )}
-          <span>Check my writing</span>
-        </button>
-      )}
-
-      <div className="pt-12 h-screen flex">
+      <div className="pt-16 h-screen flex">
         <main className="flex-1 overflow-y-auto scrollbar-minimal writing-zone">
           <div className="max-w-3xl mx-auto px-8 py-16">
             <div className="animate-fade-up">
@@ -258,8 +244,8 @@ export default function Home() {
         </main>
 
         <div 
-          className={`transition-all duration-300 ease-out
-            ${showSidebar ? 'w-[380px] opacity-100' : 'w-0 overflow-hidden opacity-0'}
+          className={`transition-all duration-300 ease-out border-l border-stone-200 bg-white
+            ${showSidebar ? 'w-[480px] opacity-100' : 'w-0 overflow-hidden opacity-0'}
           `}
         >
           <FeedbackSidebar

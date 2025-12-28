@@ -38,39 +38,31 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
   chatEndRef,
 }) => {
   return (
-    <aside className="h-full flex flex-col bg-[hsl(var(--bg-surface))] border-l border-[hsl(var(--border))]">
+    <aside className="h-full flex flex-col bg-white border-l border-stone-200">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 h-12 border-b border-[hsl(var(--border-subtle))]">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[hsl(var(--accent))]" />
-          <span className="text-sm font-medium text-[hsl(var(--text-primary))]">
-            Feedback
-          </span>
-        </div>
+      <div className="flex items-center justify-between px-6 h-16 border-b border-stone-100">
+        <h2 className="text-lg font-bold text-stone-900 tracking-tight">
+          Review
+        </h2>
         <button
           onClick={onRefresh}
           disabled={isLoading}
-          className={`p-2 text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-primary))] rounded-lg hover:bg-[hsl(var(--bg-hover))] transition-smooth ${isLoading ? "animate-spin" : ""}`}
-          title="Re-analyze"
+          className={`p-2 text-stone-400 hover:text-stone-900 rounded-full hover:bg-stone-100 transition-colors ${isLoading ? "animate-spin" : ""}`}
+          title="Re-analyze document"
         >
           <RotateCcw className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Conversation */}
-      <div className="flex-1 overflow-y-auto scrollbar-minimal">
-        <div className="py-4 space-y-4">
-          {conversation.map((item, index) => {
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto scrollbar-clean px-6 py-6">
+        <div className="space-y-8">
+          {conversation.map((item) => {
             if (item.type === 'user') {
               return (
-                <div key={item.id} className="px-4 animate-fade-up" style={{ animationDelay: `${index * 50}ms` }}>
-                  <div className="flex gap-3">
-                    <div className="w-7 h-7 rounded-full bg-[hsl(var(--bg-hover))] text-[hsl(var(--text-secondary))] flex items-center justify-center text-xs font-medium shrink-0">
-                      Y
-                    </div>
-                    <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed pt-1">
-                      {item.content}
-                    </p>
+                <div key={item.id} className="flex justify-end">
+                  <div className="bg-stone-100 text-stone-800 px-4 py-2 rounded-2xl rounded-tr-sm text-sm max-w-[85%]">
+                    {item.content}
                   </div>
                 </div>
               );
@@ -78,24 +70,12 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
 
             if (item.type === 'assistant') {
               return (
-                <div key={item.id} className="px-4 animate-fade-up" style={{ animationDelay: `${index * 50}ms` }}>
-                  <div className="flex gap-3">
-                    <div className="w-7 h-7 rounded-full bg-[hsl(var(--accent-soft))] text-[hsl(var(--accent))] flex items-center justify-center shrink-0">
-                      <Sparkles className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed pt-1">
-                      <ReactMarkdown
-                        components={{
-                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                          strong: ({ children }) => <strong className="font-semibold text-[hsl(var(--text-primary))]">{children}</strong>,
-                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
-                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
-                          code: ({ children }) => <code className="text-xs bg-[hsl(var(--bg-hover))] px-1.5 py-0.5 rounded font-mono text-[hsl(var(--accent))]">{children}</code>,
-                        }}
-                      >
-                        {item.content}
-                      </ReactMarkdown>
-                    </div>
+                <div key={item.id} className="flex gap-3">
+                  <div className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center shrink-0 mt-1">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div className="prose prose-sm prose-stone max-w-none">
+                    <ReactMarkdown>{item.content}</ReactMarkdown>
                   </div>
                 </div>
               );
@@ -103,39 +83,31 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
 
             if (item.type === 'feedback') {
               return (
-                <div key={item.id} className="space-y-3 animate-fade-up" style={{ animationDelay: `${index * 50}ms` }}>
+                <div key={item.id} className="space-y-6">
                   {/* Intro */}
-                  <div className="px-4">
+                  {item.text && (
                     <div className="flex gap-3">
-                      <div className="w-7 h-7 rounded-full bg-[hsl(var(--accent-soft))] text-[hsl(var(--accent))] flex items-center justify-center shrink-0">
-                        <Sparkles className="w-3.5 h-3.5" />
+                      <div className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center shrink-0 mt-1">
+                        <Sparkles className="w-4 h-4" />
                       </div>
-                      <div className="pt-1">
-                        <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed">
-                          {item.text}
-                        </p>
-                        {item.comments.length > 0 && (
-                          <p className="text-xs text-[hsl(var(--text-muted))] mt-1">
-                            {item.comments.length} suggestion{item.comments.length !== 1 ? 's' : ''}
-                          </p>
-                        )}
-                      </div>
+                      <p className="text-stone-600 leading-relaxed pt-1">
+                        {item.text}
+                      </p>
                     </div>
-                  </div>
+                  )}
                   
                   {/* Cards */}
                   {item.comments.length > 0 && (
-                    <div className="space-y-2 px-3">
-                      {item.comments.map((comment, i) => (
-                        <div key={comment.id} className="animate-fade-up" style={{ animationDelay: `${(index * 50) + (i * 75)}ms` }}>
-                          <SuggestionCard
-                            comment={comment}
-                            isActive={activeCommentId === comment.id}
-                            onClick={() => onCommentClick(comment.id)}
-                            onApply={onApply}
-                            onDismiss={onDismiss}
-                          />
-                        </div>
+                    <div className="space-y-4 pl-11">
+                      {item.comments.map((comment) => (
+                        <SuggestionCard
+                          key={comment.id}
+                          comment={comment}
+                          isActive={activeCommentId === comment.id}
+                          onClick={() => onCommentClick(comment.id)}
+                          onApply={onApply}
+                          onDismiss={onDismiss}
+                        />
                       ))}
                     </div>
                   )}
@@ -146,18 +118,12 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
             return null;
           })}
           
-          {/* Loading */}
           {isLoading && (
-            <div className="px-4 animate-fade-up">
-              <div className="flex gap-3">
-                <div className="w-7 h-7 rounded-full bg-[hsl(var(--accent-soft))] flex items-center justify-center shrink-0">
-                  <Sparkles className="w-3.5 h-3.5 text-[hsl(var(--accent))] animate-pulse" />
-                </div>
-                <div className="flex gap-1 pt-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--text-muted))] animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--text-muted))] animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--text-muted))] animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
+            <div className="flex gap-3 animate-pulse">
+              <div className="w-8 h-8 rounded-full bg-stone-200 shrink-0" />
+              <div className="space-y-2 flex-1 pt-2">
+                <div className="h-2 bg-stone-200 rounded w-3/4" />
+                <div className="h-2 bg-stone-200 rounded w-1/2" />
               </div>
             </div>
           )}
@@ -167,20 +133,20 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-[hsl(var(--border-subtle))]">
+      <div className="p-4 border-t border-stone-100">
         <form onSubmit={onChatSubmit} className="relative">
           <input
             type="text"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
-            placeholder="Ask anything..."
-            className="w-full pl-4 pr-11 py-2.5 bg-[hsl(var(--bg-elevated))] border border-[hsl(var(--border))] rounded-xl text-sm text-[hsl(var(--text-primary))] outline-none placeholder:text-[hsl(var(--text-muted))] focus:border-[hsl(var(--accent)/0.5)] focus:ring-1 focus:ring-[hsl(var(--accent)/0.2)] transition-smooth"
+            placeholder="Ask a question..."
+            className="w-full pl-4 pr-12 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-100 transition-all placeholder:text-stone-400"
             disabled={isLoading}
           />
           <button 
             type="submit"
             disabled={isLoading || !chatInput.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-[hsl(var(--text-muted))] hover:text-[hsl(var(--accent))] disabled:opacity-30 transition-smooth rounded-lg hover:bg-[hsl(var(--accent-soft))]"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-stone-400 hover:text-stone-900 disabled:opacity-30 transition-colors"
           >
             <Send className="w-4 h-4" />
           </button>
