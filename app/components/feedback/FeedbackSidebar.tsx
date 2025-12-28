@@ -3,7 +3,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import { SuggestionCard, Comment } from "./SuggestionCard";
-import { Send, RotateCcw, Sparkles, User, Bot } from "lucide-react";
+import { Send, RotateCcw, Sparkles } from "lucide-react";
 
 type ConversationItem = 
   | { type: 'user'; id: string; content: string }
@@ -38,47 +38,39 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
   chatEndRef,
 }) => {
   return (
-    <aside className="h-full flex flex-col bg-[hsl(var(--surface-1))]">
+    <aside className="h-full flex flex-col bg-[hsl(var(--bg-surface))] border-l border-[hsl(var(--border))]">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 h-14 border-b border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-0))]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-lg bg-linear-to-br from-[hsl(var(--accent-primary))] to-[hsl(var(--accent-primary-hover))] flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-white" />
-          </div>
-          <h2 className="text-sm font-semibold text-[hsl(var(--warm-800))]">
+      <div className="flex items-center justify-between px-5 h-12 border-b border-[hsl(var(--border-subtle))]">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[hsl(var(--accent))]" />
+          <span className="text-sm font-medium text-[hsl(var(--text-primary))]">
             Feedback
-          </h2>
+          </span>
         </div>
         <button
           onClick={onRefresh}
           disabled={isLoading}
-          className={`p-2 text-[hsl(var(--warm-400))] hover:text-[hsl(var(--warm-700))] rounded-lg hover:bg-[hsl(var(--warm-100))] transition-smooth ${isLoading ? "animate-spin" : ""}`}
-          title="Re-analyze document"
+          className={`p-2 text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-primary))] rounded-lg hover:bg-[hsl(var(--bg-hover))] transition-smooth ${isLoading ? "animate-spin" : ""}`}
+          title="Re-analyze"
         >
           <RotateCcw className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Conversation Stream */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="py-5 space-y-5">
+      {/* Conversation */}
+      <div className="flex-1 overflow-y-auto scrollbar-minimal">
+        <div className="py-4 space-y-4">
           {conversation.map((item, index) => {
             if (item.type === 'user') {
               return (
-                <div 
-                  key={item.id} 
-                  className="px-5 animate-fade-in"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[hsl(var(--warm-800))] text-white flex items-center justify-center shrink-0">
-                      <User className="w-4 h-4" />
+                <div key={item.id} className="px-4 animate-fade-up" style={{ animationDelay: `${index * 50}ms` }}>
+                  <div className="flex gap-3">
+                    <div className="w-7 h-7 rounded-full bg-[hsl(var(--bg-hover))] text-[hsl(var(--text-secondary))] flex items-center justify-center text-xs font-medium shrink-0">
+                      Y
                     </div>
-                    <div className="flex-1 pt-1.5">
-                      <p className="text-[13px] text-[hsl(var(--warm-700))] leading-relaxed">
-                        {item.content}
-                      </p>
-                    </div>
+                    <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed pt-1">
+                      {item.content}
+                    </p>
                   </div>
                 </div>
               );
@@ -86,51 +78,23 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
 
             if (item.type === 'assistant') {
               return (
-                <div 
-                  key={item.id} 
-                  className="px-5 animate-fade-in"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-linear-to-br from-[hsl(var(--accent-tertiary))] to-[hsl(var(--accent-secondary))] text-white flex items-center justify-center shrink-0">
-                      <Bot className="w-4 h-4" />
+                <div key={item.id} className="px-4 animate-fade-up" style={{ animationDelay: `${index * 50}ms` }}>
+                  <div className="flex gap-3">
+                    <div className="w-7 h-7 rounded-full bg-[hsl(var(--accent-soft))] text-[hsl(var(--accent))] flex items-center justify-center shrink-0">
+                      <Sparkles className="w-3.5 h-3.5" />
                     </div>
-                    <div className="flex-1 pt-1.5">
-                      <div className="prose prose-sm max-w-none">
-                        <ReactMarkdown
-                          components={{
-                            p: ({ children }) => (
-                              <p className="text-[13px] text-[hsl(var(--warm-700))] leading-relaxed mb-2.5 last:mb-0">
-                                {children}
-                              </p>
-                            ),
-                            strong: ({ children }) => (
-                              <strong className="font-semibold text-[hsl(var(--warm-800))]">
-                                {children}
-                              </strong>
-                            ),
-                            em: ({ children }) => <em className="italic">{children}</em>,
-                            ul: ({ children }) => (
-                              <ul className="text-[13px] text-[hsl(var(--warm-700))] list-disc pl-4 mb-2.5 space-y-1">
-                                {children}
-                              </ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol className="text-[13px] text-[hsl(var(--warm-700))] list-decimal pl-4 mb-2.5 space-y-1">
-                                {children}
-                              </ol>
-                            ),
-                            li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-                            code: ({ children }) => (
-                              <code className="text-[12px] bg-[hsl(var(--warm-100))] px-1.5 py-0.5 rounded font-mono text-[hsl(var(--accent-primary))]">
-                                {children}
-                              </code>
-                            ),
-                          }}
-                        >
-                          {item.content}
-                        </ReactMarkdown>
-                      </div>
+                    <div className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed pt-1">
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          strong: ({ children }) => <strong className="font-semibold text-[hsl(var(--text-primary))]">{children}</strong>,
+                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                          code: ({ children }) => <code className="text-xs bg-[hsl(var(--bg-hover))] px-1.5 py-0.5 rounded font-mono text-[hsl(var(--accent))]">{children}</code>,
+                        }}
+                      >
+                        {item.content}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 </div>
@@ -139,39 +103,31 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
 
             if (item.type === 'feedback') {
               return (
-                <div 
-                  key={item.id} 
-                  className="space-y-4 animate-fade-in"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  {/* Feedback intro message */}
-                  <div className="px-5">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-linear-to-br from-[hsl(var(--accent-primary))] to-[hsl(var(--accent-secondary))] text-white flex items-center justify-center shrink-0">
-                        <Sparkles className="w-4 h-4" />
+                <div key={item.id} className="space-y-3 animate-fade-up" style={{ animationDelay: `${index * 50}ms` }}>
+                  {/* Intro */}
+                  <div className="px-4">
+                    <div className="flex gap-3">
+                      <div className="w-7 h-7 rounded-full bg-[hsl(var(--accent-soft))] text-[hsl(var(--accent))] flex items-center justify-center shrink-0">
+                        <Sparkles className="w-3.5 h-3.5" />
                       </div>
-                      <div className="flex-1 pt-1.5">
-                        <p className="text-[13px] text-[hsl(var(--warm-700))] leading-relaxed">
+                      <div className="pt-1">
+                        <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed">
                           {item.text}
                         </p>
                         {item.comments.length > 0 && (
-                          <p className="text-[11px] text-[hsl(var(--warm-400))] mt-1.5 font-medium">
-                            {item.comments.length} suggestion{item.comments.length !== 1 ? 's' : ''} found
+                          <p className="text-xs text-[hsl(var(--text-muted))] mt-1">
+                            {item.comments.length} suggestion{item.comments.length !== 1 ? 's' : ''}
                           </p>
                         )}
                       </div>
                     </div>
                   </div>
                   
-                  {/* Suggestion cards */}
+                  {/* Cards */}
                   {item.comments.length > 0 && (
-                    <div className="space-y-2.5 px-4">
-                      {item.comments.map((comment, commentIndex) => (
-                        <div
-                          key={comment.id}
-                          className="animate-fade-in"
-                          style={{ animationDelay: `${(index * 50) + (commentIndex * 75)}ms` }}
-                        >
+                    <div className="space-y-2 px-3">
+                      {item.comments.map((comment, i) => (
+                        <div key={comment.id} className="animate-fade-up" style={{ animationDelay: `${(index * 50) + (i * 75)}ms` }}>
                           <SuggestionCard
                             comment={comment}
                             isActive={activeCommentId === comment.id}
@@ -190,19 +146,17 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
             return null;
           })}
           
-          {/* Loading indicator */}
+          {/* Loading */}
           {isLoading && (
-            <div className="px-5 animate-fade-in">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-[hsl(var(--warm-200))] text-[hsl(var(--warm-400))] flex items-center justify-center shrink-0 animate-pulse-subtle">
-                  <Sparkles className="w-4 h-4" />
+            <div className="px-4 animate-fade-up">
+              <div className="flex gap-3">
+                <div className="w-7 h-7 rounded-full bg-[hsl(var(--accent-soft))] flex items-center justify-center shrink-0">
+                  <Sparkles className="w-3.5 h-3.5 text-[hsl(var(--accent))] animate-pulse" />
                 </div>
-                <div className="flex-1 pt-3">
-                  <div className="flex gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-[hsl(var(--warm-300))] animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 rounded-full bg-[hsl(var(--warm-300))] animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 rounded-full bg-[hsl(var(--warm-300))] animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
+                <div className="flex gap-1 pt-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--text-muted))] animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--text-muted))] animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--text-muted))] animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </div>
@@ -212,21 +166,21 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
         </div>
       </div>
 
-      {/* Chat Input */}
-      <div className="p-4 border-t border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-0))]">
+      {/* Input */}
+      <div className="p-3 border-t border-[hsl(var(--border-subtle))]">
         <form onSubmit={onChatSubmit} className="relative">
           <input
             type="text"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
-            placeholder="Ask about your writing..."
-            className="w-full pl-4 pr-12 py-3 bg-[hsl(var(--surface-1))] border border-[hsl(var(--border))] rounded-xl text-sm text-[hsl(var(--warm-800))] outline-none placeholder:text-[hsl(var(--warm-400))] focus:border-[hsl(var(--accent-primary)/0.5)] focus:ring-2 focus:ring-[hsl(var(--accent-primary)/0.1)] transition-smooth"
+            placeholder="Ask anything..."
+            className="w-full pl-4 pr-11 py-2.5 bg-[hsl(var(--bg-elevated))] border border-[hsl(var(--border))] rounded-xl text-sm text-[hsl(var(--text-primary))] outline-none placeholder:text-[hsl(var(--text-muted))] focus:border-[hsl(var(--accent)/0.5)] focus:ring-1 focus:ring-[hsl(var(--accent)/0.2)] transition-smooth"
             disabled={isLoading}
           />
           <button 
             type="submit"
             disabled={isLoading || !chatInput.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[hsl(var(--warm-400))] hover:text-[hsl(var(--accent-primary))] disabled:opacity-30 disabled:hover:text-[hsl(var(--warm-400))] transition-smooth rounded-lg hover:bg-[hsl(var(--accent-soft))]"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-[hsl(var(--text-muted))] hover:text-[hsl(var(--accent))] disabled:opacity-30 transition-smooth rounded-lg hover:bg-[hsl(var(--accent-soft))]"
           >
             <Send className="w-4 h-4" />
           </button>

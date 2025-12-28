@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Source_Serif_4, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const instrumentSans = Instrument_Sans({
+// Beautiful serif for writing - highly readable
+const sourceSerif = Source_Serif_4({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+});
+
+// Clean sans for UI
+const dmSans = DM_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
-});
-
+// Mono for code
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
@@ -22,8 +25,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WriteGuide — Your AI Writing Coach",
-  description: "Get thoughtful, actionable feedback on your writing",
+  title: "WriteGuide",
+  description: "Write better. Think clearer.",
 };
 
 export default function RootLayout({
@@ -34,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${sourceSerif.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
         style={{ fontFamily: 'var(--font-sans), system-ui, sans-serif' }}
       >
         {children}

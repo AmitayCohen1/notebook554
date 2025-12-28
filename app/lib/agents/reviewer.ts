@@ -51,7 +51,7 @@ ACTIONS:
 ${document}
 """
 
-Generate a list of specific comments. Every 'insert' or 'rewrite' MUST include a concrete 'suggestion' with the exact text to use.`,
+Generate specific comments. Every 'insert' or 'rewrite' MUST include a concrete 'suggestion' with the exact text to use.`,
     });
 
     console.log("[reviewer] ====== RECEIVED FROM LLM ======");
