@@ -50,7 +50,7 @@ export const InlinePopup: React.FC<InlinePopupProps> = ({
           <div className="space-y-8">
             {/* 1. you wrote: */}
             <div className="space-y-2">
-              <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-400/80">
                 you wrote:
               </div>
               <div className="text-lg text-white/40 italic leading-relaxed">
@@ -58,17 +58,7 @@ export const InlinePopup: React.FC<InlinePopupProps> = ({
               </div>
             </div>
 
-            {/* 2. issue: */}
-            <div className="space-y-2">
-              <div className="text-[10px] font-bold text-rose-400/80 uppercase tracking-widest">
-                issue:
-              </div>
-              <p className="text-2xl font-bold leading-tight text-white/95">
-                {comment.message}
-              </p>
-            </div>
-
-            {/* 3. suggestion: */}
+            {/* 2. suggestion: */}
             <div className="space-y-2">
               <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
                 suggestion:
@@ -81,12 +71,22 @@ export const InlinePopup: React.FC<InlinePopupProps> = ({
               </div>
             </div>
 
+            {/* 3. reason: (formerly issue) */}
+            <div className="space-y-2">
+              <div className="text-[10px] font-bold text-rose-400/80 uppercase tracking-widest">
+                reason:
+              </div>
+              <p className="text-xl font-semibold leading-tight text-white/70">
+                {comment.message}
+              </p>
+            </div>
+
             {/* 4. kind of: */}
             <div className="pt-4 border-t border-white/5 flex items-center gap-3">
               <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
                 kind of:
               </div>
-              <span className="text-[11px] font-bold uppercase tracking-widest text-indigo-400">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-indigo-400/60">
                 {comment.category}
               </span>
             </div>

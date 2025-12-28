@@ -23,7 +23,7 @@ RULES:
 2. message = one sentence, clear explanation of the improvement.
 3. suggestion = THE FIX. You MUST provide a concrete replacement for every single issue. No empty suggestions.
 4. category = 'grammar' (errors), 'clarity' (confusing/wordy), or 'style' (tone/impact).
-5. Generate 10-30 comments.
+5. Generate a list of comments.
 6. Keep quotes short (3-10 words) to ensure robust matching.
 7. No "praise" comments. Only actionable improvements.`,
       prompt: `${focusNote}

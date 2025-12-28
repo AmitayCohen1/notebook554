@@ -253,9 +253,9 @@ export default function Home() {
 
       <div className="flex-1 flex pt-14 overflow-hidden">
         {/* Editor Container */}
-        <main className={`h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-8 pb-[50vh] transition-all duration-500 ${viewMode === "sidebar" ? "w-2/3" : "w-full"}`}>
+        <main className={`h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-4 pb-[50vh] transition-all duration-500 ${viewMode === "sidebar" ? "w-2/3" : "w-full"}`}>
           {/* Paper Sheet */}
-          <div className="w-full max-w-4xl bg-[hsl(var(--bg-sheet))] shadow-[0_4px_40px_rgba(0,0,0,0.4)] border border-white/5 px-16 py-24 relative transition-all duration-500">
+          <div className="w-full max-w-4xl bg-[hsl(var(--bg-sheet))] shadow-[0_4px_40px_rgba(0,0,0,0.4)] border border-white/5 px-16 py-16 relative transition-all duration-500">
             <Editor
               content={content}
               setContent={setContent}

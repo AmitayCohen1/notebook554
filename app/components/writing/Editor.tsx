@@ -133,7 +133,7 @@ export const Editor: React.FC<EditorProps> = ({
     border: "none",
     outline: "none",
     background: "transparent",
-    paddingTop: "24px",
+    paddingTop: "0px",
   };
 
   return (
