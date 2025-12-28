@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Zap, Wind, Feather } from "lucide-react";
 
 interface Range {
@@ -16,10 +16,11 @@ interface EditorProps {
   highlightRanges: Range[];
   activeCommentId: string | null;
   onCommentClick: (id: string, position: { x: number; y: number }) => void;
+  onActiveMarkPositionChange?: (position: { x: number; y: number }) => void;
 }
 
 const CategoryIcon = ({ category, isActive }: { category?: string; isActive: boolean }) => {
-  const iconClass = `w-3 h-3 ${isActive ? "text-white" : "text-indigo-600"}`;
+  const iconClass = `w-3 h-3 ${isActive ? "text-black" : "text-indigo-400"}`;
   switch (category) {
     case "grammar": return <Zap className={iconClass} />;
     case "clarity": return <Wind className={iconClass} />;
@@ -34,7 +35,37 @@ export const Editor: React.FC<EditorProps> = ({
   highlightRanges,
   activeCommentId,
   onCommentClick,
+  onActiveMarkPositionChange,
 }) => {
+  const activeMarkRef = useRef<HTMLElement | null>(null);
+
+  // Auto-scroll AND update position for the popup
+  useEffect(() => {
+    if (activeCommentId && activeMarkRef.current) {
+      // 1. Scroll into view
+      activeMarkRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // 2. Wait a tick for layout/scroll to settle, then report position
+      const timer = setTimeout(() => {
+        if (!activeMarkRef.current) return;
+        
+        const rect = activeMarkRef.current.getBoundingClientRect();
+        // Only report if the mark is actually visible/rendered
+        if (rect.width > 0 && rect.height > 0) {
+          onActiveMarkPositionChange?.({ 
+            x: rect.left, 
+            y: rect.bottom 
+          });
+        }
+      }, 150); // Slightly longer timeout for scroll to start/settle
+
+      return () => clearTimeout(timer);
+    }
+  }, [activeCommentId, onActiveMarkPositionChange]);
+
   const handleIconClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     const rect = (e.target as HTMLElement).getBoundingClientRect();
@@ -75,8 +106,8 @@ export const Editor: React.FC<EditorProps> = ({
             className={`
               absolute -top-5 left-0 z-20 flex items-center justify-center w-5 h-5 rounded-full cursor-pointer transition-all
               ${isActive 
-                ? "bg-indigo-600 text-white shadow-lg scale-110" 
-                : "bg-white text-indigo-600 border border-indigo-200 shadow-sm hover:bg-indigo-50 hover:scale-105"
+                ? "bg-white text-black shadow-lg scale-110" 
+                : "bg-stone-800 text-indigo-400 border border-white/10 shadow-sm hover:bg-stone-700 hover:scale-105"
               }
             `}
             style={{ pointerEvents: "auto" }}
@@ -86,11 +117,12 @@ export const Editor: React.FC<EditorProps> = ({
           
           {/* Highlighted Text */}
           <mark
+            ref={isActive ? activeMarkRef : null}
             className={`rounded-sm transition-colors duration-200 cursor-pointer ${
-              isActive ? "bg-indigo-200" : "bg-indigo-100 hover:bg-indigo-150"
+              isActive ? "bg-white/20" : "bg-white/5 hover:bg-white/10"
             }`}
             onClick={(e) => handleIconClick(e, range.id)}
-            style={{ pointerEvents: "auto" }}
+            style={{ pointerEvents: "auto", color: "inherit" }}
           >
             {content.substring(range.start, range.end)}
           </mark>
@@ -130,7 +162,7 @@ export const Editor: React.FC<EditorProps> = ({
         style={{
           ...sharedStyles,
           gridArea: "1 / 1 / 2 / 2",
-          color: "#1a1a1a",
+          color: "#e5e5e5", // Soft white
           paddingTop: "24px",
           pointerEvents: "none",
         }}
@@ -149,7 +181,7 @@ export const Editor: React.FC<EditorProps> = ({
           ...sharedStyles,
           gridArea: "1 / 1 / 2 / 2",
           color: "transparent",
-          caretColor: "#1a1a1a",
+          caretColor: "#ffffff", // Bright white cursor
           paddingTop: "24px",
         }}
       />

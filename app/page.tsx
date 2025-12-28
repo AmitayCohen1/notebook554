@@ -105,13 +105,8 @@ export default function Home() {
       comments: processed,
     }]);
 
-    if (processed.length > 0) {
-      setActiveCommentId(processed[0].id);
-      if (viewMode === "inline") {
-        // Don't auto-open popup, let user click
-      }
-    }
-  }, [content, viewMode]);
+    if (processed.length > 0) setActiveCommentId(processed[0].id);
+  }, [content]);
 
   const sendMessage = async (messageContent: string, isAnalyze = false) => {
     if (!messageContent.trim()) return;
@@ -160,7 +155,6 @@ export default function Home() {
       return;
     }
     
-    // Find the next comment (first one remaining, or next by position)
     const currentIdx = allComments.findIndex(c => c.id === currentId);
     const nextComment = remainingComments.find(c => {
       const idx = allComments.findIndex(ac => ac.id === c.id);
@@ -169,8 +163,6 @@ export default function Home() {
     
     if (nextComment) {
       setActiveCommentId(nextComment.id);
-      // Use a centered position since we don't have the element ref
-      setPopupPosition({ x: window.innerWidth / 2 - 160, y: 200 });
     } else {
       setActiveCommentId(null);
       setPopupPosition(null);
@@ -182,7 +174,6 @@ export default function Home() {
     const newContent = content.substring(0, comment.startIndex) + comment.suggestion + content.substring(comment.endIndex);
     setContent(newContent);
     
-    // Get remaining comments after this one is removed
     const remaining = allComments.filter(c => c.id !== comment.id && c.startIndex !== -1);
     
     setConversation(prev => prev.map(item => {
@@ -190,12 +181,10 @@ export default function Home() {
       return { ...item, comments: item.comments.filter(c => c.id !== comment.id) };
     }));
     
-    // Open the next comment
     openNextComment(comment.id, remaining);
   };
 
   const dismissComment = (commentId: string) => {
-    // Get remaining comments after this one is removed
     const remaining = allComments.filter(c => c.id !== commentId && c.startIndex !== -1);
     
     setConversation(prev => prev.map(item => {
@@ -203,7 +192,6 @@ export default function Home() {
       return { ...item, comments: item.comments.filter(c => c.id !== commentId) };
     }));
     
-    // Open the next comment
     openNextComment(commentId, remaining);
   };
 
@@ -219,7 +207,7 @@ export default function Home() {
     .map(c => ({ start: c.startIndex, end: c.endIndex, id: c.id, category: c.category }));
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#F5F5F5]">
+    <div className="flex flex-col h-screen overflow-hidden bg-[hsl(var(--bg-app))] font-sans">
       <Header 
         wordCount={content.trim() ? content.trim().split(/\s+/).length : 0} 
         suggestionsCount={allComments.length} 
@@ -232,26 +220,27 @@ export default function Home() {
         {/* Editor Container */}
         <main className={`h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-16 pb-[50vh] transition-all duration-500 ${viewMode === "sidebar" ? "w-3/5" : "w-full"}`}>
           {/* Paper Sheet */}
-          <div className="w-full max-w-3xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-stone-200 px-16 py-24 relative">
+          <div className="w-full max-w-3xl bg-[hsl(var(--bg-sheet))] shadow-[0_4px_40px_rgba(0,0,0,0.4)] border border-white/5 px-16 py-24 relative">
             <Editor
               content={content}
               setContent={setContent}
               highlightRanges={highlightRanges}
               activeCommentId={activeCommentId}
               onCommentClick={handleCommentClick}
+              onActiveMarkPositionChange={(pos) => setPopupPosition(pos)}
             />
             
             {!content.trim() && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none text-center">
-                <p className="text-4xl font-serif italic">Type something.</p>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none text-center">
+                <p className="text-4xl font-serif italic text-white">Write something.</p>
               </div>
             )}
           </div>
         </main>
 
-        {/* Sidebar Panel (only in sidebar mode) */}
+        {/* Sidebar Panel */}
         {viewMode === "sidebar" && (
-          <aside className="w-2/5 h-full bg-white border-l border-stone-200">
+          <aside className="w-2/5 h-full bg-[hsl(var(--bg-sidebar))] border-l border-white/5">
             <FeedbackSidebar
               conversation={conversation}
               activeCommentId={activeCommentId}
@@ -269,7 +258,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* Inline Popup (only in inline mode) */}
+      {/* Inline Popup */}
       {viewMode === "inline" && activeComment && popupPosition && (
         <InlinePopup
           comment={activeComment}
@@ -285,12 +274,12 @@ export default function Home() {
       {/* View Mode Toggle */}
       <button
         onClick={() => setViewMode(viewMode === "sidebar" ? "inline" : "sidebar")}
-        className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-full shadow-lg text-sm font-medium text-stone-600 hover:bg-stone-50 transition-all"
+        className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-2.5 bg-white text-black rounded-full shadow-2xl text-sm font-bold hover:scale-105 transition-all"
       >
         {viewMode === "sidebar" ? (
           <>
             <PanelRightClose className="w-4 h-4" />
-            Focus Mode
+            Focus
           </>
         ) : (
           <>

@@ -38,13 +38,13 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
   chatEndRef,
 }) => {
   return (
-    <aside className="h-full flex flex-col bg-white">
-      <div className="flex items-center justify-between px-6 h-14 border-b border-stone-100">
-        <span className="text-[11px] font-bold uppercase tracking-widest text-stone-400">Review</span>
+    <aside className="h-full flex flex-col bg-black/40 backdrop-blur-xl">
+      <div className="flex items-center justify-between px-6 h-14 border-b border-white/5">
+        <span className="text-[11px] font-bold uppercase tracking-widest text-white/40">Review</span>
         <button
           onClick={onRefresh}
           disabled={isLoading}
-          className={`p-2 text-stone-400 hover:text-black transition-colors ${isLoading ? "animate-spin" : ""}`}
+          className={`p-2 text-white/40 hover:text-white transition-colors ${isLoading ? "animate-spin" : ""}`}
         >
           <RotateCcw className="w-4 h-4" />
         </button>
@@ -55,7 +55,7 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
           {conversation.map((item) => {
             if (item.type === 'user') {
               return (
-                <div key={item.id} className="text-sm text-stone-400 italic mb-4">
+                <div key={item.id} className="text-sm text-white/40 italic mb-4">
                   “{item.content}”
                 </div>
               );
@@ -63,7 +63,7 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
 
             if (item.type === 'assistant') {
               return (
-                <div key={item.id} className="prose prose-sm prose-stone max-w-none bg-stone-50 p-4 rounded-xl mb-6">
+                <div key={item.id} className="prose prose-sm prose-invert max-w-none bg-white/5 p-4 rounded-xl mb-6 border border-white/5">
                   <ReactMarkdown>{item.content}</ReactMarkdown>
                 </div>
               );
@@ -92,20 +92,20 @@ export const FeedbackSidebar: React.FC<FeedbackSidebarProps> = ({
         </div>
       </div>
 
-      <div className="p-4 border-t border-stone-100 bg-stone-50/50">
+      <div className="p-4 border-t border-white/5 bg-black/20">
         <form onSubmit={onChatSubmit} className="relative">
           <input
             type="text"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             placeholder="Ask a question..."
-            className="w-full pl-4 pr-10 py-2.5 bg-white border border-stone-200 rounded-lg text-sm outline-none focus:border-black transition-all"
+            className="w-full pl-4 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white outline-none focus:border-white/30 transition-all placeholder:text-white/20"
             disabled={isLoading}
           />
           <button 
             type="submit"
             disabled={isLoading || !chatInput.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-stone-400 hover:text-black disabled:opacity-30"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-white/40 hover:text-white disabled:opacity-30"
           >
             <Send className="w-4 h-4" />
           </button>
