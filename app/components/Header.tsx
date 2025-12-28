@@ -24,6 +24,8 @@ export const Header: React.FC<HeaderProps> = ({
   isSaving,
   showWritingTools = true,
 }) => {
+  const readingTime = Math.max(1, Math.ceil(wordCount / 225));
+
   return (
     <header className="fixed top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-6 bg-black/80 backdrop-blur-md border-b border-white/10">
       <div className="flex items-center gap-6">
@@ -31,15 +33,15 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black group-hover:scale-110 transition-transform shadow-xl">
             <Feather className="w-4 h-4" />
           </div>
-          <span className="text-sm font-bold tracking-tight text-white">Notebook554</span>
+          <span className="text-sm font-bold text-white uppercase tracking-widest">Notebook554</span>
         </Link>
 
         <SignedIn>
           <div className="h-4 w-px bg-white/10" />
           <nav className="flex items-center gap-4">
             <Link href="/editor">
-              <button className="text-[11px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">
-                Editor
+              <button className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-white transition-colors">
+                Studio
               </button>
             </Link>
           </nav>
@@ -48,17 +50,23 @@ export const Header: React.FC<HeaderProps> = ({
 
       <div className="flex items-center gap-4">
         {showWritingTools && (
-          <div className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-white/5 text-[11px] font-medium text-white/50">
-            <span>{wordCount.toLocaleString()} words</span>
+          <div className="flex items-center gap-4 px-4 py-1.5 rounded-full bg-white/5 border border-white/5">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
+              <span>{wordCount.toLocaleString()} words</span>
+              <span className="w-1 h-1 rounded-full bg-white/10" />
+              <span>{readingTime} min read</span>
+            </div>
+            
             {isSaving ? (
-              <span className="text-white/30 animate-pulse">Saving...</span>
+              <span className="text-indigo-400 text-[9px] font-bold uppercase animate-pulse">Saving</span>
             ) : (
-              <span className="text-white/30 text-[9px]">Saved</span>
+              <span className="text-white/20 text-[9px] font-bold uppercase tracking-tighter">Synced</span>
             )}
+            
             {suggestionsCount > 0 && (
-              <div className="flex items-center gap-1.5 text-indigo-400 font-bold border-l border-white/10 pl-3">
-                <div className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse" />
-                {suggestionsCount} issues
+              <div className="flex items-center gap-1.5 text-indigo-400 font-bold border-l border-white/10 pl-4 ml-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_hsla(var(--accent),0.6)] animate-pulse" />
+                <span className="text-[10px] uppercase tracking-widest">{suggestionsCount} issues</span>
               </div>
             )}
           </div>

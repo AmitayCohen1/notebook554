@@ -34,6 +34,26 @@ export const Editor: React.FC<EditorProps> = ({
   isAnalyzing = false,
 }) => {
   const activeMarkRef = useRef<HTMLElement | null>(null);
+  const [selection, setSelection] = React.useState<{ start: number; end: number } | null>(null);
+
+  // Monitor text selection
+  React.useEffect(() => {
+    const handleSelection = () => {
+      const activeEl = document.activeElement;
+      if (activeEl instanceof HTMLTextAreaElement) {
+        const start = activeEl.selectionStart;
+        const end = activeEl.selectionEnd;
+        if (start !== end) {
+          setSelection({ start, end });
+        } else {
+          setSelection(null);
+        }
+      }
+    };
+
+    document.addEventListener("selectionchange", handleSelection);
+    return () => document.removeEventListener("selectionchange", handleSelection);
+  }, []);
 
   // Auto-scroll AND update position for the popup
   useEffect(() => {
@@ -172,6 +192,16 @@ export const Editor: React.FC<EditorProps> = ({
         }}
       >
         {renderHighlights()}
+        
+        {/* Selection Metadata (Cinematic side-info) */}
+        {selection && (
+          <div className="absolute top-0 -right-32 flex flex-col gap-1 animate-in fade-in slide-in-from-left-2 duration-500">
+            <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest opacity-40">Section</div>
+            <div className="text-xs font-medium text-white/20 uppercase tracking-tighter">
+              {selection.end - selection.start} chars selected
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Layer 2: Invisible Textarea (ABSOLUTE - fills height) */}
