@@ -3,14 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { Header } from "./components/Header";
-import { Sparkles, ArrowRight, ShieldCheck, Zap, MessageSquare } from "lucide-react";
-import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { Sparkles, ArrowRight, PenTool, Zap, Eye } from "lucide-react";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default function LandingPage() {
-  const { user, isLoaded } = useUser();
-
   return (
-    <div className="min-h-screen bg-[hsl(var(--bg-app))] text-white font-sans selection:bg-indigo-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-indigo-500/30 overflow-x-hidden">
       <Header 
         wordCount={0} 
         suggestionsCount={0} 
@@ -19,89 +17,89 @@ export default function LandingPage() {
       />
 
       <main>
-        {/* Hero Section */}
-        <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-          {/* Background Glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-indigo-600/10 blur-[120px] rounded-full -z-10" />
+        {/* Cinematic Hero */}
+        <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 text-center">
+          {/* Subtle Ambient Light */}
+          <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[500px] bg-indigo-500/8 blur-[140px] rounded-full -z-10" />
           
-          <div className="max-w-5xl mx-auto text-center space-y-8 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">
-              <Sparkles className="w-3.5 h-3.5" />
-              Writing Re-imagined
+          <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/3 border border-white/8 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">
+              The Professional Writing Studio
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] text-white">
-              Write like you <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-white via-white to-white/40">mean it.</span>
+            <h1 className="text-7xl md:text-[120px] font-bold tracking-tight leading-[0.85] text-white">
+              Write with <br />
+              <span className="text-transparent bg-clip-text bg-linear-to-b from-white to-white/20 italic">unrivaled</span> clarity.
             </h1>
             
-            <p className="max-w-2xl mx-auto text-lg md:text-xl text-white/50 leading-relaxed font-medium">
-              Cinematic AI writing assistant that audits your prose in real-time. 
-              Focus on your thoughts while we handle the precision.
+            <p className="max-w-xl mx-auto text-lg md:text-xl text-white/40 leading-relaxed font-medium">
+              An immersive editor that thinks with you. <br />
+              Get surgical feedback, refine your voice, and publish your best work yet.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <div className="flex flex-col items-center gap-6 pt-6">
               <SignedOut>
                 <Link href="/sign-up">
-                  <button className="px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">
-                    Start Writing Free
+                  <button className="px-10 py-5 bg-white text-black text-sm font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.15)]">
+                    Start Writing
                   </button>
                 </Link>
               </SignedOut>
               <SignedIn>
                 <Link href="/editor">
-                  <button className="px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">
-                    Open Editor
+                  <button className="px-10 py-5 bg-white text-black text-sm font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.15)]">
+                    Open Your Studio
                   </button>
                 </Link>
               </SignedIn>
               
-              <Link href="/sign-in">
-                <button className="px-8 py-4 bg-white/5 text-white font-bold rounded-2xl hover:bg-white/10 border border-white/10 transition-all">
-                  Sign In
-                </button>
-              </Link>
+              <div className="flex items-center gap-8 text-[10px] font-bold uppercase tracking-widest text-white/20">
+                <span>Free forever</span>
+                <span className="w-1 h-1 rounded-full bg-white/10" />
+                <span>Unlimited Audits</span>
+                <span className="w-1 h-1 rounded-full bg-white/10" />
+                <span>No distractions</span>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Feature Grid */}
-        <section className="py-20 px-6">
-          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon={<Zap className="w-6 h-6" />}
-              title="Real-time Audit"
-              description="Surgical edits for grammar, clarity, and style delivered through an immersive interface."
-            />
-            <FeatureCard 
-              icon={<ShieldCheck className="w-6 h-6" />}
-              title="Neon Secure"
-              description="Your documents are stored in highly-available, secure Neon database with auto-save."
-            />
-            <FeatureCard 
-              icon={<MessageSquare className="w-6 h-6" />}
-              title="Cinematic UX"
-              description="A writing environment designed for flow, not distraction. Pure black, pure focus."
-            />
+        {/* The "Consumer" Value Section */}
+        <section className="py-32 px-6 border-t border-white/[0.03]">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+              <ValueProp 
+                icon={<Zap className="w-5 h-5 text-indigo-400" />}
+                title="Instant Audit"
+                description="We scan every syllable for friction. You get a list of precision edits to make your writing hit harder."
+              />
+              <ValueProp 
+                icon={<PenTool className="w-5 h-5 text-indigo-400" />}
+                title="Your Voice, Refined"
+                description="Our AI doesn't write for you—it helps you write better. Preserve your voice while removing the clutter."
+              />
+              <ValueProp 
+                icon={<Eye className="w-5 h-5 text-indigo-400" />}
+                title="Pure Focus"
+                description="A cinematic workspace designed to disappear. No toolbars, no popups, just you and your thoughts."
+              />
+            </div>
           </div>
         </section>
 
-        {/* Preview Image / Mockup */}
-        <section className="py-20 px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-indigo-600/20 blur-[100px] rounded-full -z-10 opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
-              <div className="aspect-video w-full bg-[hsl(var(--bg-sheet))] rounded-3xl border border-white/10 shadow-2xl overflow-hidden p-12">
-                <div className="w-full h-full flex flex-col gap-6">
-                  <div className="h-4 w-1/3 bg-white/10 rounded-full" />
-                  <div className="h-4 w-2/3 bg-white/10 rounded-full" />
-                  <div className="h-4 w-1/2 bg-white/10 rounded-full" />
-                  <div className="mt-12 h-32 w-full bg-white/5 rounded-2xl border border-white/5 p-6 relative">
-                    <div className="absolute -top-3 left-6 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                      <Sparkles className="w-3 h-3 text-black" />
+        {/* Minimal Preview */}
+        <section className="pb-40 px-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="relative p-1 bg-linear-to-b from-white/[0.08] to-transparent rounded-[40px]">
+              <div className="aspect-video w-full bg-[#0A0A0A] rounded-[38px] border border-white/[0.05] shadow-2xl overflow-hidden flex items-center justify-center p-20">
+                <div className="w-full max-w-md space-y-8 animate-pulse">
+                  <div className="h-2 w-3/4 bg-white/[0.03] rounded-full" />
+                  <div className="h-2 w-full bg-white/[0.03] rounded-full" />
+                  <div className="h-2 w-1/2 bg-white/[0.03] rounded-full" />
+                  <div className="pt-12">
+                    <div className="h-24 w-full bg-indigo-500/[0.02] border border-indigo-500/10 rounded-2xl flex items-center px-6">
+                      <div className="w-8 h-8 rounded-full bg-indigo-500/20" />
                     </div>
-                    <div className="h-2 w-3/4 bg-white/20 rounded-full" />
-                    <div className="mt-4 h-2 w-1/2 bg-white/20 rounded-full" />
                   </div>
                 </div>
               </div>
@@ -110,13 +108,23 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="py-12 px-6 border-t border-white/5">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-white/30 text-sm font-medium uppercase tracking-widest">
-          <div>© 2025 WriteGuide Studio</div>
-          <div className="flex gap-8">
-            <Link href="#" className="hover:text-white transition-colors">Twitter</Link>
-            <Link href="#" className="hover:text-white transition-colors">GitHub</Link>
+      <footer className="py-20 px-6 border-t border-white/[0.03] bg-black">
+        <div className="max-w-6xl mx-auto flex flex-col md:row justify-between items-center gap-10">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black">
+              <PenTool className="w-4 h-4" />
+            </div>
+            <span className="text-sm font-bold tracking-tight">WriteGuide Studio</span>
+          </div>
+          
+          <div className="flex gap-12 text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">
+            <Link href="#" className="hover:text-white transition-colors">Process</Link>
+            <Link href="#" className="hover:text-white transition-colors">Journal</Link>
             <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
+          </div>
+          
+          <div className="text-[10px] font-medium text-white/10 italic">
+            Engineered for clarity.
           </div>
         </div>
       </footer>
@@ -124,17 +132,18 @@ export default function LandingPage() {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+function ValueProp({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-4 hover:bg-white/[0.07] transition-all group">
-      <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+    <div className="space-y-6 group">
+      <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center group-hover:border-white/20 transition-all">
         {icon}
       </div>
-      <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
-      <p className="text-white/40 leading-relaxed font-medium text-sm">
-        {description}
-      </p>
+      <div className="space-y-3">
+        <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
+        <p className="text-white/40 leading-relaxed font-medium text-[15px]">
+          {description}
+        </p>
+      </div>
     </div>
   );
 }
-
