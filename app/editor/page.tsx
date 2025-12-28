@@ -261,7 +261,7 @@ export default function Home() {
         {/* Editor Container */}
         <main className={`h-full overflow-y-auto scrollbar-none flex flex-col items-center pt-16 pb-[50vh] transition-all duration-500 ${viewMode === "sidebar" ? "w-3/5" : "w-full"}`}>
           {/* Paper Sheet */}
-          <div className="w-full max-w-3xl bg-[hsl(var(--bg-sheet))] shadow-[0_4px_40px_rgba(0,0,0,0.4)] border border-white/5 px-16 py-24 relative">
+          <div className="w-full max-w-6xl bg-[hsl(var(--bg-sheet))] shadow-[0_4px_40px_rgba(0,0,0,0.4)] border border-white/5 px-24 py-32 relative transition-all duration-500">
             <Editor
               content={content}
               setContent={setContent}

@@ -97,7 +97,7 @@ export default function LandingPage() {
 
         {/* Minimal Preview */}
         <section className="pb-40 px-6">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <div className="relative p-1 bg-linear-to-b from-white/8 to-transparent rounded-[40px]">
               <div className="aspect-video w-full bg-[#0A0A0A] rounded-[38px] border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center p-20">
                 <div className="w-full max-w-md space-y-8 animate-pulse">
@@ -183,7 +183,7 @@ function MockEditorAnimation() {
       <div className="relative p-1 bg-linear-to-b from-white/10 to-transparent rounded-[32px] shadow-2xl">
         <div className="relative bg-[#0A0A0A] rounded-[30px] border border-white/5 p-10 min-h-[400px] flex flex-col justify-center">
           {/* Editor Content */}
-          <div className="font-serif text-2xl md:text-3xl leading-relaxed text-white/90">
+          <div className="font-serif text-3xl md:text-4xl leading-relaxed text-white/90">
             {phase < 3 ? (
               <>
                 {text.includes(highlightedPart) ? (

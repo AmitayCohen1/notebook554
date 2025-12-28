@@ -144,7 +144,7 @@ export const Editor: React.FC<EditorProps> = ({
 
   const sharedStyles: React.CSSProperties = {
     fontFamily: "Georgia, serif",
-    fontSize: "20px",
+    fontSize: "24px",
     lineHeight: "1.8",
     whiteSpace: "pre-wrap",
     wordBreak: "break-word",
@@ -153,7 +153,7 @@ export const Editor: React.FC<EditorProps> = ({
     border: "none",
     outline: "none",
     background: "transparent",
-    paddingTop: "24px",
+    paddingTop: "32px",
   };
 
   return (
