@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Feather } from "lucide-react";
 
 interface HeaderProps {
   wordCount: number;
@@ -19,45 +19,37 @@ export const Header: React.FC<HeaderProps> = ({
   isAnalyzing,
 }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 z-50 flex items-center justify-between px-8 bg-white/90 backdrop-blur-md border-b border-stone-100">
-      {/* Logo */}
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-stone-900 rounded-lg flex items-center justify-center text-white shadow-sm">
-          <span className="font-serif font-bold italic text-lg">W</span>
+    <header className="fixed top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-6 bg-white border-b border-stone-200">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center text-white">
+          <Feather className="w-4 h-4" />
         </div>
-        <span className="text-base font-bold tracking-tight text-stone-900">
-          WriteGuide
-        </span>
+        <span className="text-sm font-bold tracking-tight">WriteGuide</span>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-6">
-        <span className="text-xs font-medium text-stone-400 tabular-nums">
-          {wordCount.toLocaleString()} words
-        </span>
-        
-        {/* Primary CTA in Header */}
-        {!hasAnalyzed && wordCount > 0 && onAnalyze && (
-          <button
-            onClick={onAnalyze}
-            disabled={isAnalyzing}
-            className="flex items-center gap-2 px-5 py-2 bg-stone-900 text-white text-sm font-bold rounded-full hover:bg-stone-800 transition-all shadow-sm active:translate-y-[1px] disabled:opacity-70"
-          >
-            {isAnalyzing ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Sparkles className="w-4 h-4" />
-            )}
-            Check my writing
-          </button>
-        )}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-stone-100 text-[11px] font-medium text-stone-500">
+          <span>{wordCount.toLocaleString()} words</span>
+          {suggestionsCount > 0 && (
+            <div className="flex items-center gap-1.5 text-indigo-600 font-bold">
+              <div className="w-1 h-1 rounded-full bg-indigo-600" />
+              {suggestionsCount} issues
+            </div>
+          )}
+        </div>
 
-        {hasAnalyzed && suggestionsCount > 0 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">
-            <Sparkles className="w-3.5 h-3.5" />
-            {suggestionsCount} Suggestions
-          </div>
-        )}
+        <button
+          onClick={onAnalyze}
+          disabled={isAnalyzing}
+          className="flex items-center gap-2 px-4 py-1.5 bg-black text-white text-xs font-bold rounded-full hover:bg-stone-800 transition-all disabled:opacity-50"
+        >
+          {isAnalyzing ? (
+            <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Sparkles className="w-3 h-3" />
+          )}
+          Check Writing
+        </button>
       </div>
     </header>
   );

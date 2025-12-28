@@ -25,66 +25,49 @@ export const Editor: React.FC<EditorProps> = ({
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize
+  // Sync heights
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
-      textarea.style.height = `${Math.max(textarea.scrollHeight, 600)}px`;
+      textarea.style.height = `${textarea.scrollHeight}px`;
     }
   }, [content]);
 
-  // Build highlighted content layer
   const renderHighlights = () => {
-    if (highlightRanges.length === 0) return content;
+    // Add a trailing space to ensure the highlighter div has the same layout as textarea
+    const textToRender = content + (content.endsWith('\n') ? ' ' : '');
+    
+    if (highlightRanges.length === 0) return <span>{textToRender}</span>;
 
     const parts: React.ReactNode[] = [];
     let lastEnd = 0;
     
-    // Sort and ensure safe ranges
-    const validRanges = highlightRanges
+    const sortedRanges = [...highlightRanges]
       .filter(r => r.start >= 0 && r.end > r.start && r.end <= content.length)
       .sort((a, b) => a.start - b.start);
 
-    validRanges.forEach((range, i) => {
-      // Text before
+    sortedRanges.forEach((range, i) => {
       if (range.start > lastEnd) {
         parts.push(<span key={`t-${i}`}>{content.substring(lastEnd, range.start)}</span>);
       }
       
-      // Handle overlap: if this range starts before lastEnd, it's an overlap.
-      // For v1 Crystal, we just let them stack/clobber slightly, or we skip.
-      // But user specifically asked "ensure you know how to deal with 2 comments on same line".
-      // Simple fix: if overlapping, we just cut the previous one short? No, that breaks rendering.
-      // Correct fix: We need a flat list of segments.
-      
-      // Allow overlaps by checking if we need to backtrack? 
-      // Actually, standard <mark> nesting is hard in React without a parser.
-      // Fallback: If overlapping, just render it anyway? No, indices will be wrong.
-      
-      if (range.start < lastEnd) {
-        // OVERLAP DETECTED.
-        // Option: Render as a separate layer? 
-        // Option: Skip highlighting for the second one?
-        // Option: Just render the *tail* if it extends beyond?
-        
-        // For now: Skip to avoid UI breaking. 
-        // (A real fix requires splitting segments: 0-10, 10-15(overlap), 15-20)
-        return; 
-      }
+      if (range.start < lastEnd) return;
 
       const isActive = activeCommentId === range.id;
       
       parts.push(
         <mark
-          key={`h-${i}`}
+          key={`h-${range.id}`}
           onClick={() => onCommentClick(range.id)}
-          className="pointer-events-auto cursor-pointer rounded-sm transition-colors duration-200"
-          style={{ 
-            color: 'transparent',
-            backgroundColor: isActive ? 'hsl(var(--highlight))' : 'hsla(45, 100%, 85%, 0.4)',
-            borderBottom: isActive ? '2px solid black' : '1px solid transparent',
-          }}
+          className={`
+            relative cursor-pointer transition-all duration-200 rounded-sm
+            ${isActive 
+              ? "bg-indigo-600/20 border-b-2 border-indigo-600" 
+              : "bg-indigo-100/50 border-b border-indigo-200 hover:bg-indigo-100"
+            }
+          `}
+          style={{ color: 'transparent' }}
         >
           {content.substring(range.start, range.end)}
         </mark>
@@ -92,39 +75,49 @@ export const Editor: React.FC<EditorProps> = ({
       lastEnd = range.end;
     });
 
-    if (lastEnd < content.length) {
-      parts.push(<span key="end">{content.substring(lastEnd)}</span>);
+    if (lastEnd < textToRender.length) {
+      parts.push(<span key="end">{textToRender.substring(lastEnd)}</span>);
     }
 
     return parts;
   };
 
   return (
-    <div className="relative w-full text-lg leading-relaxed">
-      {/* Highlight Layer */}
+    <div className="grid w-full relative">
+      {/* 
+        This "ghost" div and the textarea occupy the exact same grid cell.
+        The ghost div sets the height of the container.
+      */}
       <div
-        className="absolute inset-0 whitespace-pre-wrap overflow-hidden pointer-events-none"
+        className="col-start-1 row-start-1 whitespace-pre-wrap break-words pointer-events-none"
         style={{
           fontFamily: 'var(--font-serif), Georgia, serif',
+          fontSize: '20px',
+          lineHeight: '1.8',
           color: 'transparent',
-          paddingBottom: '200px' // Match textarea buffer
+          padding: '0',
+          margin: '0',
+          minHeight: '800px',
         }}
         aria-hidden="true"
       >
         {renderHighlights()}
       </div>
 
-      {/* Editing Layer */}
       <textarea
         ref={textareaRef}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Start writing..."
-        className="relative w-full bg-transparent resize-none outline-none border-none p-0 focus:ring-0 placeholder:text-[hsl(var(--text-tertiary))]"
+        className="col-start-1 row-start-1 w-full bg-transparent resize-none outline-none border-none p-0 focus:ring-0 overflow-hidden"
         style={{
           fontFamily: 'var(--font-serif), Georgia, serif',
-          minHeight: '600px',
-          color: 'hsl(var(--text-primary))',
+          fontSize: '20px',
+          lineHeight: '1.8',
+          color: '#1a1a1a',
+          padding: '0',
+          margin: '0',
+          minHeight: '800px',
         }}
       />
     </div>

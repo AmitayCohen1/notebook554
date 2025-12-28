@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Check, X, ArrowRight, Wand2, Zap, Wind, Feather } from "lucide-react";
+import { Check, X, ArrowRight, Zap, Wind, Feather, Wand2 } from "lucide-react";
 
 export type CommentCategory = "grammar" | "clarity" | "style";
 
@@ -23,16 +23,12 @@ interface SuggestionCardProps {
   onDismiss: (id: string) => void;
 }
 
-const getCategoryStyles = (category: CommentCategory) => {
+const CategoryIcon = ({ category }: { category: CommentCategory }) => {
   switch (category) {
-    case "grammar":
-      return { icon: Zap, color: "text-rose-500", bg: "bg-rose-50", border: "border-rose-100", accent: "text-rose-600" };
-    case "clarity":
-      return { icon: Wind, color: "text-blue-500", bg: "bg-blue-50", border: "border-blue-100", accent: "text-blue-600" };
-    case "style":
-      return { icon: Feather, color: "text-purple-500", bg: "bg-purple-50", border: "border-purple-100", accent: "text-purple-600" };
-    default:
-      return { icon: Wand2, color: "text-stone-500", bg: "bg-stone-50", border: "border-stone-100", accent: "text-stone-600" };
+    case "grammar": return <Zap className="w-3.5 h-3.5" />;
+    case "clarity": return <Wind className="w-3.5 h-3.5" />;
+    case "style": return <Feather className="w-3.5 h-3.5" />;
+    default: return <Wand2 className="w-3.5 h-3.5" />;
   }
 };
 
@@ -43,67 +39,45 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
   onApply,
   onDismiss,
 }) => {
-  const styles = getCategoryStyles(comment.category);
-  const Icon = styles.icon;
-
   return (
     <div
       onClick={onClick}
-      className={`group relative flex flex-col gap-3 p-5 rounded-2xl transition-all duration-300 cursor-pointer border
-        ${isActive 
-          ? "bg-white border-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.08)] scale-[1.02] ring-1 ring-stone-900/5 z-10" 
-          : "bg-white border-stone-100 hover:border-stone-300 hover:shadow-lg hover:shadow-stone-200/50 hover:-translate-y-0.5"
-        }`}
+      className={`group relative flex flex-col transition-all duration-200 cursor-pointer border-b border-stone-100 last:border-0
+        ${isActive ? "bg-stone-50/80 px-6 py-8 -mx-6" : "px-0 py-5 hover:bg-stone-50/50"}`}
     >
-      {/* Header: Quote + Dismiss */}
-      <div className="flex justify-between items-start gap-4">
-        <div className={`pl-2.5 border-l-[3px] ${styles.border.replace('bg-', 'border-')} text-xs text-stone-400 font-medium italic truncate max-w-[240px]`}>
-          "{comment.quote}"
+      <div className="flex items-center justify-between mb-2">
+        <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${isActive ? "text-indigo-600" : "text-stone-400"}`}>
+          <CategoryIcon category={comment.category} />
+          {comment.category}
         </div>
-        
         <button 
           onClick={(e) => { e.stopPropagation(); onDismiss(comment.id); }}
-          className="text-stone-300 hover:text-stone-900 p-1 -mt-1 -mr-1 rounded-full hover:bg-stone-100 transition-all opacity-0 group-hover:opacity-100"
-          title="Dismiss"
+          className="text-stone-300 hover:text-stone-900 opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Message / Feedback */}
-      <div className="flex gap-3 mt-1">
-        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${styles.bg} mt-0.5`}>
-          <Icon className={`w-3.5 h-3.5 ${styles.color}`} />
-        </div>
-        <div className="text-[15px] font-bold text-stone-900 leading-snug pt-0.5">
-          {comment.message}
-        </div>
+      <div className={`transition-all duration-200 ${isActive ? "text-xl font-bold text-stone-900 mb-6" : "text-sm text-stone-600 font-medium"}`}>
+        {comment.message}
       </div>
 
-      {/* Suggestion & Apply */}
       {isActive && (
-        <div className="pt-2 flex flex-col gap-3 animate-in fade-in slide-in-from-top-1 duration-200 pl-9">
-          <div className={`p-3 rounded-xl border ${styles.bg} ${styles.border}`}>
-            <p className="text-[14px] text-stone-800 font-medium leading-relaxed">
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+          <div className="p-4 bg-white rounded-xl border border-stone-200 shadow-sm">
+            <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Change to:</div>
+            <div className="text-base font-medium text-stone-900 leading-relaxed">
               {comment.suggestion}
-            </p>
+            </div>
           </div>
 
           <button
             onClick={(e) => { e.stopPropagation(); onApply(comment); }}
-            className="flex items-center justify-center gap-2 w-full py-2.5 bg-stone-900 text-white text-[13px] font-bold rounded-xl hover:bg-emerald-600 transition-all shadow-sm active:scale-[0.98]"
+            className="flex items-center justify-between w-full px-6 py-3 bg-black text-white rounded-xl hover:bg-stone-800 transition-all shadow-lg active:scale-95"
           >
-            <Check className="w-3.5 h-3.5" />
-            Accept Fix
+            <span className="text-sm font-bold">Apply fix</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
-        </div>
-      )}
-      
-      {/* Peek when inactive */}
-      {!isActive && (
-        <div className={`flex items-center gap-2 text-xs font-medium ${styles.accent} pl-9 pt-1 opacity-80`}>
-          <span>View suggestion</span>
-          <ArrowRight className="w-3 h-3 ml-auto text-stone-300 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       )}
     </div>

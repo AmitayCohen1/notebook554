@@ -5,7 +5,6 @@ import { Header } from "./components/Header";
 import { Editor } from "./components/writing/Editor";
 import { FeedbackSidebar } from "./components/feedback/FeedbackSidebar";
 import { Comment } from "./components/feedback/SuggestionCard";
-import { Sparkles, Loader2 } from "lucide-react";
 
 type ConversationItem = 
   | { type: 'user'; id: string; content: string }
@@ -16,7 +15,6 @@ export default function Home() {
   const [content, setContent] = useState("");
   const [conversation, setConversation] = useState<ConversationItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   
@@ -26,68 +24,67 @@ export default function Home() {
     .filter((item): item is Extract<ConversationItem, { type: 'feedback' }> => item.type === 'feedback')
     .flatMap(item => item.comments);
 
+  // Sync scroll between sidebar and editor
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
 
-  // Re-anchor comments when content changes (find quote again)
+  // Re-anchor comments when content changes
   useEffect(() => {
     if (allComments.length === 0) return;
 
-    setConversation(prev => prev.map(item => {
-      if (item.type !== 'feedback') return item;
-      
-      const updatedComments = item.comments
-        .map((c) => {
-          const idx = content.indexOf(c.quote);
-          if (idx === -1) return null; // Quote no longer exists
-          return { ...c, startIndex: idx, endIndex: idx + c.quote.length };
-        })
-        .filter((c): c is Comment => c !== null);
-      
-      return { ...item, comments: updatedComments };
-    }));
+    setConversation(prev => {
+      const usedInThisPass = new Set<number>();
+      return prev.map(item => {
+        if (item.type !== 'feedback') return item;
+        const updatedComments = item.comments.map((c) => {
+          let foundIdx = -1;
+          let searchIdx = 0;
+          while (true) {
+            const idx = content.indexOf(c.quote, searchIdx);
+            if (idx === -1) break;
+            if (!usedInThisPass.has(idx)) {
+              foundIdx = idx;
+              usedInThisPass.add(idx);
+              break;
+            }
+            searchIdx = idx + 1;
+          }
+          if (foundIdx !== -1) {
+            return { ...c, startIndex: foundIdx, endIndex: foundIdx + c.quote.length };
+          }
+          return { ...c, startIndex: -1, endIndex: -1 };
+        });
+        return { ...item, comments: updatedComments };
+      });
+    });
   }, [content]);
 
   const processComments = useCallback((rawComments: any[], assistantText: string) => {
     if (!rawComments || !content) return;
-    
-    console.log("[processComments] Raw comments:", rawComments.length);
-    
     const usedIndices = new Set<number>();
-
     const processed = rawComments
       .map((c, i) => {
         const quote = c.quote;
         let searchIdx = 0;
         let foundIdx = -1;
-
         while (true) {
           const idx = content.indexOf(quote, searchIdx);
           if (idx === -1) break;
-          
-          const key = idx; 
-          if (!usedIndices.has(key)) {
+          if (!usedIndices.has(idx)) {
             foundIdx = idx;
-            usedIndices.add(key);
+            usedIndices.add(idx);
             break;
           }
           searchIdx = idx + 1;
         }
-
-        if (foundIdx === -1) {
-           foundIdx = content.indexOf(quote);
-        }
-
-        if (foundIdx === -1) {
-          return null;
-        }
-
+        if (foundIdx === -1) foundIdx = content.indexOf(quote);
+        if (foundIdx === -1) return null;
         return {
           id: `comment-${Date.now()}-${i}`,
           quote: c.quote,
           message: c.message,
-          suggestion: c.suggestion ?? null,
+          suggestion: c.suggestion ?? "",
           category: c.category || "style",
           startIndex: foundIdx,
           endIndex: foundIdx + c.quote.length,
@@ -96,12 +93,10 @@ export default function Home() {
       .filter((c): c is Comment => c !== null)
       .sort((a, b) => a.startIndex - b.startIndex);
 
-    console.log("[processComments] Processed comments:", processed.length);
-
     setConversation(prev => [...prev, {
       type: 'feedback',
       id: `feedback-${Date.now()}`,
-      text: assistantText || "Here's my feedback.",
+      text: assistantText,
       comments: processed,
     }]);
 
@@ -111,8 +106,6 @@ export default function Home() {
   const sendMessage = async (messageContent: string, isAnalyze = false) => {
     if (!messageContent.trim()) return;
     setIsLoading(true);
-    setError(null);
-
     if (!isAnalyze) {
       setConversation(prev => [...prev, { type: 'user', id: `user-${Date.now()}`, content: messageContent }]);
     }
@@ -122,9 +115,7 @@ export default function Home() {
         .filter(item => item.type === 'user' || item.type === 'assistant')
         .map(item => ({ role: item.type as 'user' | 'assistant', content: (item as any).content }));
       
-      if (!isAnalyze) {
-        apiMessages.push({ role: 'user', content: messageContent });
-      }
+      if (!isAnalyze) apiMessages.push({ role: 'user', content: messageContent });
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -133,13 +124,11 @@ export default function Home() {
           mode: isAnalyze ? "review" : "chat",
           messages: isAnalyze ? [{ role: "user", content: messageContent }] : apiMessages,
           document: content,
-          context: { 
-            pendingComments: allComments.map((c) => c.message)
-          },
+          context: { pendingComments: allComments.map((c) => c.message) },
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to get response");
+      if (!response.ok) throw new Error("API failed");
       const data = await response.json();
 
       if (data.comments && data.comments.length > 0) {
@@ -148,7 +137,7 @@ export default function Home() {
         setConversation(prev => [...prev, { type: 'assistant', id: `assistant-${Date.now()}`, content: data.text }]);
       }
     } catch (err) {
-      setError("Analysis failed. Please try again.");
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -158,7 +147,6 @@ export default function Home() {
     if (!comment.suggestion) return;
     const newContent = content.substring(0, comment.startIndex) + comment.suggestion + content.substring(comment.endIndex);
     setContent(newContent);
-    
     setConversation(prev => prev.map(item => {
       if (item.type !== 'feedback') return item;
       return { ...item, comments: item.comments.filter(c => c.id !== comment.id) };
@@ -172,67 +160,55 @@ export default function Home() {
     }));
   };
 
-  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
-  const highlightRanges = allComments.map(c => ({ 
-    start: c.startIndex, 
-    end: c.endIndex, 
-    id: c.id,
-  }));
-
-  const showSidebar = conversation.length > 0;
+  const highlightRanges = allComments
+    .filter(c => c.startIndex !== -1)
+    .map(c => ({ start: c.startIndex, end: c.endIndex, id: c.id }));
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--bg-deep))]">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#F8F8F8] font-sans">
       <Header 
-        wordCount={wordCount} 
+        wordCount={content.trim() ? content.trim().split(/\s+/).length : 0} 
         suggestionsCount={allComments.length} 
-        hasAnalyzed={showSidebar}
-        onAnalyze={() => sendMessage("Please review my document.", true)}
+        hasAnalyzed={conversation.length > 0}
+        onAnalyze={() => sendMessage("Review my text.", true)}
         isAnalyzing={isLoading}
       />
 
-      <div className="pt-16 h-screen flex">
-        <main className="flex-1 overflow-y-auto scrollbar-minimal writing-zone">
-          <div className="max-w-3xl mx-auto px-8 py-16">
-            <div className="animate-fade-up">
-              <Editor
-                content={content}
-                setContent={setContent}
-                highlightRanges={highlightRanges}
-                activeCommentId={activeCommentId}
-                onCommentClick={setActiveCommentId}
-              />
-            </div>
-
+      <div className="flex-1 flex pt-14 overflow-hidden">
+        {/* Editor Pane (60%) */}
+        <main className="w-3/5 h-full overflow-y-auto scrollbar-none flex justify-center py-12 px-12 border-r border-stone-200">
+          <div className="w-full max-w-2xl bg-white paper-shadow min-h-screen px-16 py-20 relative">
+            <Editor
+              content={content}
+              setContent={setContent}
+              highlightRanges={highlightRanges}
+              activeCommentId={activeCommentId}
+              onCommentClick={setActiveCommentId}
+            />
             {!content.trim() && (
-              <div className="absolute top-1/3 left-1/2 -translate-x-1/2 text-center pointer-events-none opacity-40">
-                <p className="text-xl font-serif text-[hsl(var(--text-secondary))] italic">
-                  Start writing...
-                </p>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
+                <p className="text-4xl font-serif italic">Write...</p>
               </div>
             )}
           </div>
         </main>
 
-        <div 
-          className={`transition-all duration-500 ease-out border-l border-stone-200 bg-[#FDFDFD] shadow-2xl
-            ${showSidebar ? 'w-[600px] translate-x-0' : 'w-0 translate-x-full overflow-hidden opacity-0'}
-          `}
-        >
+        {/* Sidebar Pane (40%) */}
+        <aside className="w-2/5 h-full bg-white">
           <FeedbackSidebar
             conversation={conversation}
             activeCommentId={activeCommentId}
             onCommentClick={setActiveCommentId}
             onApply={applyEdit}
             onDismiss={dismissComment}
-            onRefresh={() => sendMessage("Please review my document again.", true)}
+            onRefresh={() => sendMessage("Review my text.", true)}
             isLoading={isLoading}
             chatInput={chatInput}
             setChatInput={setChatInput}
             onChatSubmit={(e) => { e.preventDefault(); sendMessage(chatInput); setChatInput(""); }}
             chatEndRef={chatEndRef}
           />
-        </div>
+        </aside>
       </div>
     </div>
   );
