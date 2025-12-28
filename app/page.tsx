@@ -52,10 +52,16 @@ export default function Home() {
   const processComments = useCallback((rawComments: any[], assistantText: string) => {
     if (!rawComments || !content) return;
     
+    console.log("[processComments] Raw comments:", rawComments.length);
+    
     const processed = rawComments
       .map((c, i) => {
         const idx = content.indexOf(c.quote);
-        if (idx === -1) return null;
+        console.log(`[processComments] Quote "${c.quote.slice(0, 30)}..." -> idx: ${idx}`);
+        if (idx === -1) {
+          console.log(`[processComments] MISS - quote not found in content`);
+          return null;
+        }
         return {
           id: `comment-${Date.now()}-${i}`,
           quote: c.quote,
@@ -66,6 +72,9 @@ export default function Home() {
         };
       })
       .filter((c): c is Comment => c !== null);
+
+    console.log("[processComments] Processed comments:", processed.length);
+    console.log("[processComments] Indices:", processed.map(c => `${c.startIndex}-${c.endIndex}`));
 
     setConversation(prev => [...prev, {
       type: 'feedback',
@@ -147,6 +156,14 @@ export default function Home() {
     end: c.endIndex, 
     id: c.id,
   }));
+
+  // Debug: log highlight ranges when they change
+  useEffect(() => {
+    if (highlightRanges.length > 0) {
+      console.log("[highlightRanges]", highlightRanges);
+      console.log("[content length]", content.length);
+    }
+  }, [highlightRanges, content.length]);
 
   const showSidebar = conversation.length > 0;
 
