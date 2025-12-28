@@ -1,46 +1,43 @@
-import { ToolLoopAgent } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { z } from "zod";
-import { generateComments } from "./reviewer";
+import { generateText, Output, type ModelMessage } from "ai";
+import { ChatResultSchema } from "./schema";
 
-/**
- * Factory function that creates a WritingCoachAgent per request.
- * This pattern is necessary because tools need access to request-specific data (the document).
- * See: https://ai-sdk.dev/docs/agents/building-agents
- */
-export function createWritingCoachAgent(document: string, pendingComments?: string[]) {
-  let contextInfo = "";
-  if (pendingComments && pendingComments.length > 0) {
-    contextInfo = `\n\nPENDING SUGGESTIONS:\n${pendingComments.join("\n")}`;
-  }
+export async function answerQuestion(args: {
+  document: string;
+  messages: ModelMessage[];
+  pendingComments?: string[];
+}) {
+  const { document, messages, pendingComments } = args;
 
-  return new ToolLoopAgent({
+  const pending =
+    pendingComments && pendingComments.length
+      ? `PENDING SUGGESTIONS (do not repeat verbatim unless asked):\n- ${pendingComments.join(
+          "\n- "
+        )}`
+      : "PENDING SUGGESTIONS: none";
+
+  const { output } = await generateText({
     model: anthropic("claude-sonnet-4-20250514"),
+    output: Output.object({ schema: ChatResultSchema }),
+    system: `You are WriteGuide Coach. Return ONLY valid JSON.
 
-    instructions: `You are a writing coach. Be EXTREMELY brief.
+ROLE:
+- Answer the user's question about THIS document.
 
-DOCUMENT:
-"""
-${document}
-"""
-${contextInfo}
-
-RULES:
-1. For reviews/feedback → use 'review_document' tool. Keep your response very short. Nothing more.
-2. For questions → answer in 1-2 sentences max. No fluff.
-3. Never give general writing advice. Be specific or stay silent.`,
-
-    tools: {
-      review_document: {
-        description: "Analyze document and generate specific inline comments with concrete suggestions.",
-        inputSchema: z.object({
-          focus: z.string().optional().describe("Focus area: 'grammar', 'clarity', 'tone', 'structure'"),
-        }),
-        execute: async ({ focus }: { focus?: string }) => {
-          const comments = await generateComments(document, focus);
-          return { comments };
-        },
+HARD RULES:
+- 1–3 short sentences. No fluff. No preamble. No apologies.
+- If the question cannot be answered from the document, say what info is missing in one sentence.
+- Do not suggest using tools. Do not generate inline comments here.
+- Do not output markdown. Do not add keys other than { "text": ... }.
+`,
+    messages: [
+      {
+        role: "system",
+        content: `DOCUMENT:\n\"\"\"\n${document}\n\"\"\"\n\n${pending}`,
       },
-    },
+      ...messages,
+    ],
   });
+
+  return output.text;
 }

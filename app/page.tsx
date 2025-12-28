@@ -21,7 +21,6 @@ export default function Home() {
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const lastContentRef = useRef<string>("");
 
   const allComments = conversation
     .filter((item): item is Extract<ConversationItem, { type: 'feedback' }> => item.type === 'feedback')
@@ -31,40 +30,39 @@ export default function Home() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
 
+  // Re-anchor comments when content changes (find quote again)
   useEffect(() => {
-    if (allComments.length === 0 || content === lastContentRef.current) return;
-    lastContentRef.current = content;
+    if (allComments.length === 0) return;
 
     setConversation(prev => prev.map(item => {
       if (item.type !== 'feedback') return item;
       
       const updatedComments = item.comments
         .map((c) => {
-          const startIndex = content.indexOf(c.original_text);
-          if (startIndex === -1) return null;
-          const endIndex = startIndex + c.original_text.length;
-          if (c.startIndex === startIndex && c.endIndex === endIndex) return c;
-          return { ...c, startIndex, endIndex };
+          const idx = content.indexOf(c.quote);
+          if (idx === -1) return null; // Quote no longer exists
+          return { ...c, startIndex: idx, endIndex: idx + c.quote.length };
         })
         .filter((c): c is Comment => c !== null);
       
       return { ...item, comments: updatedComments };
     }));
-  }, [content, allComments.length]);
+  }, [content]);
 
   const processComments = useCallback((rawComments: any[], assistantText: string) => {
     if (!rawComments || !content) return;
     
     const processed = rawComments
       .map((c, i) => {
-        const startIndex = content.indexOf(c.original_text);
-        if (startIndex === -1) return null;
-        const endIndex = startIndex + c.original_text.length;
+        const idx = content.indexOf(c.quote);
+        if (idx === -1) return null;
         return {
-          ...c,
           id: `comment-${Date.now()}-${i}`,
-          startIndex,
-          endIndex,
+          quote: c.quote,
+          message: c.message,
+          suggestion: c.suggestion ?? null,
+          startIndex: idx,
+          endIndex: idx + c.quote.length,
         };
       })
       .filter((c): c is Comment => c !== null);
@@ -72,7 +70,7 @@ export default function Home() {
     setConversation(prev => [...prev, {
       type: 'feedback',
       id: `feedback-${Date.now()}`,
-      text: assistantText || "I've reviewed your document.",
+      text: assistantText || "Here's my feedback.",
       comments: processed,
     }]);
 
@@ -101,10 +99,11 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          mode: isAnalyze ? "review" : "chat",
           messages: isAnalyze ? [{ role: "user", content: messageContent }] : apiMessages,
           document: content,
           context: { 
-            pendingComments: allComments.map((c) => c.comment)
+            pendingComments: allComments.map((c) => c.message)
           },
         }),
       });
@@ -147,7 +146,6 @@ export default function Home() {
     start: c.startIndex, 
     end: c.endIndex, 
     id: c.id,
-    category: c.category
   }));
 
   const showSidebar = conversation.length > 0;
@@ -161,10 +159,8 @@ export default function Home() {
       />
 
       <div className="pt-12 h-screen flex">
-        {/* Writing area - centered and focused */}
         <main className="flex-1 overflow-y-auto scrollbar-minimal writing-zone">
           <div className="max-w-3xl mx-auto px-8 py-16">
-            {/* The writing space */}
             <div className="animate-fade-up">
               <Editor
                 content={content}
@@ -175,11 +171,10 @@ export default function Home() {
               />
             </div>
 
-            {/* Analyze button - appears when there's content */}
             {!showSidebar && content.trim() && (
               <div className="mt-16 flex justify-center animate-fade-up" style={{ animationDelay: '200ms' }}>
                 <button
-                  onClick={() => sendMessage("Please review my document and provide feedback.", true)}
+                  onClick={() => sendMessage("Please review my document.", true)}
                   disabled={isLoading}
                   className="group flex items-center gap-3 px-6 py-3 bg-[hsl(var(--accent))] text-[hsl(var(--bg-deep))] text-sm font-semibold rounded-full hover:scale-[1.02] transition-smooth active:scale-[0.98] disabled:opacity-60 glow"
                 >
@@ -193,7 +188,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Minimal empty state */}
             {!content.trim() && (
               <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-up" style={{ animationDelay: '300ms' }}>
                 <p className="text-xs text-[hsl(var(--text-faint))] tracking-wide">
@@ -204,7 +198,6 @@ export default function Home() {
           </div>
         </main>
 
-        {/* Sidebar */}
         <div 
           className={`transition-all duration-300 ease-out
             ${showSidebar ? 'w-[380px] opacity-100' : 'w-0 overflow-hidden opacity-0'}

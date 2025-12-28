@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { CommentCategory } from "../feedback/SuggestionCard";
 
 interface Range {
   start: number;
   end: number;
   id: string;
-  category?: CommentCategory;
 }
 
 interface EditorProps {
@@ -17,27 +15,6 @@ interface EditorProps {
   activeCommentId: string | null;
   onCommentClick: (id: string) => void;
 }
-
-const getCategoryColor = (category: CommentCategory) => {
-  switch (category) {
-    case "grammar":
-    case "consistency":
-      return { bg: "var(--cat-grammar-soft)", border: "var(--cat-grammar)" };
-    case "clarity":
-    case "logic":
-    case "thesis":
-      return { bg: "var(--cat-clarity-soft)", border: "var(--cat-clarity)" };
-    case "style":
-    case "tone":
-      return { bg: "var(--cat-style-soft)", border: "var(--cat-style)" };
-    case "structure":
-    case "transitions":
-    case "examples":
-      return { bg: "var(--cat-structure-soft)", border: "var(--cat-structure)" };
-    default:
-      return { bg: "var(--bg-hover)", border: "var(--text-muted)" };
-  }
-};
 
 export const Editor: React.FC<EditorProps> = ({
   content,
@@ -82,9 +59,7 @@ export const Editor: React.FC<EditorProps> = ({
             }
             
             const isActive = activeCommentId === range.id;
-            const colors = range.category 
-              ? getCategoryColor(range.category) 
-              : { bg: "var(--bg-hover)", border: "var(--text-muted)" };
+            const colors = { bg: "var(--bg-hover)", border: "var(--accent)" };
             
             parts.push(
               <mark

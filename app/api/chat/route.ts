@@ -1,39 +1,38 @@
-import { createWritingCoachAgent } from "@/app/lib/agents/coach";
+import { answerQuestion } from "@/app/lib/agents/coach";
+import { reviewDocument } from "@/app/lib/agents/reviewer";
 
 export async function POST(req: Request) {
-  const { messages, document, context } = await req.json();
-  
-  console.log("[API] Received request with", messages.length, "messages");
-
   try {
-    // Create agent per-request with document in closure (AI SDK 6 pattern)
-    const agent = createWritingCoachAgent(document, context?.pendingComments);
-    
-    const result = await agent.generate({ messages });
+    const body = await req.json();
+    const { messages, document, context, mode, focus } = body as {
+      messages: any[];
+      document: string;
+      context?: { pendingComments?: string[] };
+      mode?: "review" | "chat";
+      focus?: string;
+    };
 
-    console.log("[API] Result text:", result.text);
-    console.log("[API] Steps:", result.steps?.length || 0);
+    // Default behavior: if caller didn't specify, infer from prompt-ish single message
+    const resolvedMode: "review" | "chat" =
+      mode ??
+      (messages?.length === 1 &&
+      typeof messages?.[0]?.content === "string" &&
+      /review|analy/i.test(messages[0].content)
+        ? "review"
+        : "chat");
 
-    // Extract comments from tool results across all steps
-    let comments: any[] = [];
-    if (result.steps) {
-      for (const step of result.steps) {
-        if (step.toolResults) {
-          for (const toolResult of step.toolResults) {
-            const tr = toolResult as any;
-            if (tr.toolName === "review_document" && tr.output?.comments) {
-              comments = tr.output.comments;
-              console.log("[API] Found", comments.length, "comments from tool");
-            }
-          }
-        }
-      }
+    if (resolvedMode === "review") {
+      const review = await reviewDocument(document, focus);
+      return Response.json({ text: "Line comments", comments: review.comments });
     }
 
-    return Response.json({
-      text: result.text || "I've reviewed your document.",
-      comments,
+    const text = await answerQuestion({
+      document,
+      messages,
+      pendingComments: context?.pendingComments,
     });
+
+    return Response.json({ text, comments: [] });
   } catch (error) {
     console.error("[API] Error:", error);
     return Response.json({ error: "Failed to process request" }, { status: 500 });
