@@ -162,7 +162,7 @@ export default function Home() {
 
   const highlightRanges = allComments
     .filter(c => c.startIndex !== -1)
-    .map(c => ({ start: c.startIndex, end: c.endIndex, id: c.id }));
+    .map(c => ({ start: c.startIndex, end: c.endIndex, id: c.id, category: c.category }));
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#F5F5F5]">
