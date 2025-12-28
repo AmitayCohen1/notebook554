@@ -4,7 +4,7 @@ import { z } from "zod";
 export const CommentSchema = z.object({
   quote: z.string().min(1).describe("Exact text from the document to highlight."),
   message: z.string().describe("One sentence explaining the issue."),
-  suggestion: z.string().nullable().describe("Replacement text, or null if just a comment."),
+  suggestion: z.string().describe("The replacement text. MUST be provided for every comment."),
 });
 
 export type Comment = z.infer<typeof CommentSchema>;

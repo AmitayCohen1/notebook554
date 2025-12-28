@@ -16,15 +16,16 @@ export async function reviewDocument(
     const result = await generateText({
       model: anthropic("claude-sonnet-4-20250514"),
       output: Output.object({ schema: ReviewResultSchema }),
-      system: `You are a writing reviewer. Return JSON only.
+      system: `You are a strict, actionable writing editor. Return JSON only.
 
 RULES:
 1. quote = exact text copied from the document (will be used for indexOf matching)
-2. message = one sentence, concrete feedback
-3. suggestion = replacement text, or null if no change needed
-4. Generate 10-30 comments. More is better.
-5. Keep quotes short (1-2 sentences max) to avoid duplicates.
-6. No markdown, no meta commentary.`,
+2. message = one sentence, clear explanation of the improvement.
+3. suggestion = THE FIX. You MUST provide a concrete replacement for every single issue. No empty suggestions.
+4. Generate 10-30 comments.
+5. Keep quotes short (3-10 words) to ensure robust matching.
+6. No "praise" comments. Only actionable improvements.
+7. No markdown, no meta commentary.`,
       prompt: `${focusNote}
 
 DOCUMENT:
@@ -32,7 +33,7 @@ DOCUMENT:
 ${document}
 """
 
-Return JSON with comments array.`,
+Return JSON with comments array. Every comment must have a suggestion.`,
     });
 
     if (!result.output?.comments) {

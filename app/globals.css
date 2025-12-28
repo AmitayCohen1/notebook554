@@ -4,8 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================
-   WriteGuide - A New Way to Write
-   Dark, focused, readable, innovative
+   WriteGuide - Crystal Smooth (Paper Theme)
+   High legibility, zero friction, clear actions.
    ============================================ */
 
 @theme inline {
@@ -17,42 +17,32 @@
 }
 
 :root {
-  /* Deep, rich background - like writing at night */
-  --bg-deep: 220 20% 8%;
-  --bg-surface: 220 18% 11%;
-  --bg-elevated: 220 16% 14%;
-  --bg-hover: 220 14% 18%;
+  /* Clean Paper Background */
+  --bg-app: 0 0% 98%;       /* Almost white */
+  --bg-paper: 0 0% 100%;    /* Pure white paper */
+  --bg-sidebar: 0 0% 99%;
   
-  /* Text - warm and readable */
-  --text-primary: 45 20% 95%;
-  --text-secondary: 45 10% 70%;
-  --text-muted: 220 10% 45%;
-  --text-faint: 220 10% 30%;
+  /* Text - High Contrast but Soft */
+  --text-primary: 0 0% 10%;
+  --text-secondary: 0 0% 40%;
+  --text-tertiary: 0 0% 60%;
   
-  /* Writing text - the star of the show */
-  --text-writing: 45 30% 92%;
+  /* Accent - Action Color (Deep Blue/Black) */
+  --accent: 220 10% 10%;         /* Almost black */
+  --accent-hover: 220 10% 20%;
+  --accent-light: 220 10% 96%;
   
-  /* Accent - a warm amber glow */
-  --accent: 35 100% 55%;
-  --accent-soft: 35 80% 20%;
-  --accent-glow: 35 100% 55% / 0.15;
-  
-  /* Category colors - subtle but clear */
-  --cat-grammar: 0 70% 60%;
-  --cat-grammar-soft: 0 50% 15%;
-  --cat-clarity: 200 70% 55%;
-  --cat-clarity-soft: 200 50% 15%;
-  --cat-style: 160 50% 50%;
-  --cat-style-soft: 160 40% 15%;
-  --cat-structure: 35 70% 55%;
-  --cat-structure-soft: 35 50% 15%;
+  /* Highlights - Clear Yellow/Gold */
+  --highlight: 45 100% 85%;
+  --highlight-active: 45 100% 60%;
   
   /* Borders */
-  --border: 220 15% 18%;
-  --border-subtle: 220 15% 14%;
+  --border: 0 0% 90%;
+  --border-active: 0 0% 80%;
   
   /* Shadows */
-  --shadow: 220 50% 3%;
+  --shadow-paper: 0 2px 12px rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
 @layer base {
@@ -61,123 +51,45 @@
   }
   
   body {
-    background: hsl(var(--bg-deep));
+    background: hsl(var(--bg-app));
     color: hsl(var(--text-primary));
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
   
   ::selection {
-    background: hsl(var(--accent) / 0.3);
-    color: hsl(var(--text-primary));
+    background: hsl(var(--highlight));
+    color: black;
   }
 }
 
 @layer utilities {
-  /* Custom scrollbar - minimal */
-  .scrollbar-minimal {
+  .scrollbar-clean {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--bg-hover)) transparent;
+    scrollbar-color: hsl(var(--border)) transparent;
   }
   
-  .scrollbar-minimal::-webkit-scrollbar {
-    width: 8px;
+  .scrollbar-clean::-webkit-scrollbar {
+    width: 6px;
   }
   
-  .scrollbar-minimal::-webkit-scrollbar-track {
-    background: transparent;
+  .scrollbar-clean::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 999px;
   }
   
-  .scrollbar-minimal::-webkit-scrollbar-thumb {
-    background: hsl(var(--bg-hover));
-    border-radius: 4px;
+  .writing-container {
+    background: white;
+    box-shadow: var(--shadow-paper);
   }
   
-  .scrollbar-minimal::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--text-muted));
+  /* Animation for new comments */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .scrollbar-none {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  /* Glow effect */
-  .glow {
-    box-shadow: 0 0 20px hsl(var(--accent-glow)), 0 0 40px hsl(var(--accent-glow));
-  }
-  
-  .glow-subtle {
-    box-shadow: 0 0 30px hsl(var(--accent) / 0.08);
-  }
-  
-  /* Smooth transitions */
-  .transition-smooth {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  /* Fade in */
-  @keyframes fadeUp {
-    from { 
-      opacity: 0; 
-      transform: translateY(12px); 
-    }
-    to { 
-      opacity: 1; 
-      transform: translateY(0); 
-    }
-  }
-  
-  .animate-fade-up {
-    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-  
-  /* Writing cursor blink */
-  @keyframes cursor-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
-  
-  /* Pulse glow */
-  @keyframes pulse-glow {
-    0%, 100% { 
-      box-shadow: 0 0 20px hsl(var(--accent) / 0.1);
-    }
-    50% { 
-      box-shadow: 0 0 30px hsl(var(--accent) / 0.2);
-    }
-  }
-  
-  .animate-pulse-glow {
-    animation: pulse-glow 3s ease-in-out infinite;
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out forwards;
   }
 }
 
-/* Focus mode - the writing area */
-.writing-zone {
-  background: linear-gradient(
-    180deg,
-    hsl(var(--bg-surface)) 0%,
-    hsl(var(--bg-deep)) 100%
-  );
-}
-
-/* Highlight marks in editor */
-.highlight-mark {
-  border-radius: 2px;
-  padding: 0 1px;
-  margin: 0 -1px;
-  transition: all 0.15s ease;
-}
-
-.highlight-mark:hover {
-  filter: brightness(1.2);
-}
-
-.highlight-mark.active {
-  filter: brightness(1.3);
-}

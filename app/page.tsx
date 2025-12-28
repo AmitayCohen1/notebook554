@@ -177,18 +177,17 @@ export default function Home() {
 
       {/* Floating "Get feedback" button */}
       {!showSidebar && content.trim() && (
-        <button
+          <button
           onClick={() => sendMessage("Please review my document.", true)}
           disabled={isLoading}
-          className="fixed bottom-8 right-8 z-50 flex items-center gap-2.5 px-5 py-3 bg-[hsl(var(--accent))] text-[hsl(var(--bg-deep))] text-sm font-semibold rounded-full hover:scale-105 transition-smooth active:scale-95 disabled:opacity-60 shadow-lg animate-fade-up"
-          style={{ boxShadow: '0 4px 24px hsl(var(--accent) / 0.4)' }}
+          className="fixed bottom-10 right-10 z-50 flex items-center gap-3 px-6 py-4 bg-black text-white text-sm font-bold rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-105 hover:shadow-[0_8px_40px_rgba(0,0,0,0.16)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <Sparkles className="w-4 h-4" />
           )}
-          <span>Get feedback</span>
+          <span>Check my writing</span>
         </button>
       )}
 
@@ -205,10 +204,10 @@ export default function Home() {
               />
             </div>
 
-{!content.trim() && (
-              <div className="mt-32 text-center animate-fade-up">
-                <p className="text-sm text-[hsl(var(--text-muted))]">
-                  Start writing to get feedback
+            {!content.trim() && (
+              <div className="absolute top-1/3 left-1/2 -translate-x-1/2 text-center pointer-events-none opacity-40">
+                <p className="text-xl font-serif text-[hsl(var(--text-secondary))] italic">
+                  Start writing...
                 </p>
               </div>
             )}
