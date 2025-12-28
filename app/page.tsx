@@ -244,8 +244,8 @@ export default function Home() {
         </main>
 
         <div 
-          className={`transition-all duration-300 ease-out border-l border-stone-200 bg-white
-            ${showSidebar ? 'w-[480px] opacity-100' : 'w-0 overflow-hidden opacity-0'}
+          className={`transition-all duration-500 ease-out border-l border-stone-200 bg-[#FDFDFD] shadow-2xl
+            ${showSidebar ? 'w-[600px] translate-x-0' : 'w-0 translate-x-full overflow-hidden opacity-0'}
           `}
         >
           <FeedbackSidebar
