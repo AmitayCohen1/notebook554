@@ -54,27 +54,70 @@ export default function Home() {
     
     console.log("[processComments] Raw comments:", rawComments.length);
     
+    // Sort raw comments by length (longest quotes first) to handle sub-matches better? 
+    // Or just process sequentially.
+    // We need to track used ranges to handle duplicates correctly.
+    
+    const usedIndices = new Set<number>();
+
     const processed = rawComments
       .map((c, i) => {
-        const idx = content.indexOf(c.quote);
-        console.log(`[processComments] Quote "${c.quote.slice(0, 30)}..." -> idx: ${idx}`);
-        if (idx === -1) {
-          console.log(`[processComments] MISS - quote not found in content`);
+        // Find all occurrences of the quote
+        const quote = c.quote;
+        let searchIdx = 0;
+        let foundIdx = -1;
+
+        // Try to find an occurrence that hasn't been heavily overlapped yet
+        // Simple heuristic: just find the first one that matches
+        // Ideally we'd map them 1:1 if there are multiple same quotes
+        
+        // For v1: Find the first occurrence after the *previous* comment's position? 
+        // No, comments come in arbitrary order.
+        
+        // Better: Find ALL occurrences, pick one that isn't taken.
+        while (true) {
+          const idx = content.indexOf(quote, searchIdx);
+          if (idx === -1) break;
+          
+          // Check if this start index is already "claimed" by another exact same quote comment?
+          // For now, let's just pick the first one. 
+          // If we want to handle 2 comments on same line with same quote... complex.
+          
+          // Let's at least try to find *unique* positions for identical quotes if possible.
+          const key = idx; 
+          if (!usedIndices.has(key)) {
+            foundIdx = idx;
+            usedIndices.add(key);
+            break;
+          }
+          searchIdx = idx + 1;
+        }
+
+        // Fallback: if all occurrences taken (or none found), pick the first one again or fail
+        if (foundIdx === -1) {
+           // Reset and just take the first one even if used
+           foundIdx = content.indexOf(quote);
+        }
+
+        if (foundIdx === -1) {
+          console.log(`[processComments] MISS - quote not found: "${quote.slice(0, 20)}..."`);
           return null;
         }
+
         return {
           id: `comment-${Date.now()}-${i}`,
           quote: c.quote,
           message: c.message,
           suggestion: c.suggestion ?? null,
-          startIndex: idx,
-          endIndex: idx + c.quote.length,
+          startIndex: foundIdx,
+          endIndex: foundIdx + c.quote.length,
         };
       })
-      .filter((c): c is Comment => c !== null);
+      .filter((c): c is Comment => c !== null)
+      // Sort by start index so they flow naturally
+      .sort((a, b) => a.startIndex - b.startIndex);
 
     console.log("[processComments] Processed comments:", processed.length);
-    console.log("[processComments] Indices:", processed.map(c => `${c.startIndex}-${c.endIndex}`));
 
     setConversation(prev => [...prev, {
       type: 'feedback',
@@ -180,7 +223,7 @@ export default function Home() {
           <button
           onClick={() => sendMessage("Please review my document.", true)}
           disabled={isLoading}
-          className="fixed bottom-10 right-10 z-50 flex items-center gap-3 px-6 py-4 bg-black text-white text-sm font-bold rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-105 hover:shadow-[0_8px_40px_rgba(0,0,0,0.16)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="fixed bottom-10 right-10 z-50 flex items-center gap-3 px-6 py-4 bg-white text-black border border-stone-200 text-sm font-bold rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-105 hover:shadow-[0_8px_40px_rgba(0,0,0,0.16)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
