@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { Zap, Wind, Feather } from "lucide-react";
+import { Sparkle } from "lucide-react";
 
 interface Range {
   start: number;
@@ -20,14 +20,8 @@ interface EditorProps {
   isAnalyzing?: boolean;
 }
 
-const CategoryIcon = ({ category, isActive }: { category?: string; isActive: boolean }) => {
-  const iconClass = `w-3 h-3 ${isActive ? "text-black" : "text-indigo-400"}`;
-  switch (category) {
-    case "grammar": return <Zap className={iconClass} />;
-    case "clarity": return <Wind className={iconClass} />;
-    case "style": return <Feather className={iconClass} />;
-    default: return <Feather className={iconClass} />;
-  }
+const CategoryIcon = ({ isActive }: { isActive: boolean }) => {
+  return <Sparkle className={`w-3 h-3 ${isActive ? "text-black" : "text-indigo-400"}`} />;
 };
 
 export const Editor: React.FC<EditorProps> = ({
@@ -113,7 +107,7 @@ export const Editor: React.FC<EditorProps> = ({
             `}
             style={{ pointerEvents: "auto" }}
           >
-            <CategoryIcon category={range.category} isActive={isActive} />
+            <CategoryIcon isActive={isActive} />
           </span>
           
           {/* Highlighted Text */}

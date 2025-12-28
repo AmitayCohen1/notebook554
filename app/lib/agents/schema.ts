@@ -5,7 +5,7 @@ export const CommentSchema = z.object({
   quote: z.string().min(1).describe("Exact text from the document to highlight."),
   message: z.string().describe("One sentence explaining the issue."),
   suggestion: z.string().describe("The replacement text."),
-  category: z.enum(["grammar", "clarity", "style"]).describe("The type of issue."),
+  category: z.string().describe("A single word describing the type of issue (e.g., Clarity, Flow, Tone)."),
 });
 
 export type Comment = z.infer<typeof CommentSchema>;

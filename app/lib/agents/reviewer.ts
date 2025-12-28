@@ -20,9 +20,9 @@ export async function reviewDocument(
 
 RULES:
 1. quote = exact text copied from the document (will be used for indexOf matching)
-2. message = one sentence, clear explanation of the improvement.
+2. message = EXTREMELY CONCISE reason (max 4 words).
 3. suggestion = THE FIX. You MUST provide a concrete replacement for every single issue. No empty suggestions.
-4. category = 'grammar' (errors), 'clarity' (confusing/wordy), or 'style' (tone/impact).
+4. category = ONE WORD describing the type of issue. Choose whatever fits best.
 5. Generate a list of comments.
 6. Keep quotes short (3-10 words) to ensure robust matching.
 7. No "praise" comments. Only actionable improvements.`,

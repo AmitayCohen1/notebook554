@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Check, X, CornerDownRight } from "lucide-react";
+import { Check, X, Sparkle } from "lucide-react";
 import { Comment } from "./SuggestionCard";
 
 interface InlinePopupProps {
@@ -24,81 +24,56 @@ export const InlinePopup: React.FC<InlinePopupProps> = ({
   return (
     <>
       {/* Backdrop - Transparent to see text underneath */}
-      <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-40 bg-transparent" onClick={onClose} />
 
-      {/* Popup - Wide & Logical Split */}
+      {/* Popup - Small and Concise */}
       <div
-        className="fixed z-50 w-[800px] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0a0a0a] text-white rounded-3xl shadow-[0_40px_120px_rgba(0,0,0,1)] border border-white/10 animate-in fade-in zoom-in-95 duration-300 overflow-hidden"
+        className="fixed z-50 w-[340px] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0a0a0a] text-white rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.8)] border border-white/10 animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
       >
-        {/* Progress indicator line at the very top */}
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-white/5">
+        {/* Progress line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/5">
           <div 
             className="h-full bg-indigo-500 transition-all duration-500" 
             style={{ width: `${(currentIndex / totalCount) * 100}%` }} 
           />
         </div>
 
-        <div className="p-10 space-y-8">
-          {/* Header Row */}
-          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.3em] text-white/30">
-            <span>Issue {currentIndex} of {totalCount} • {comment.category}</span>
-            <button onClick={onClose} className="hover:text-white transition-colors p-2 -mr-2">
-              <X className="w-5 h-5" />
-            </button>
+        <div className="p-5 space-y-4">
+          {/* Header area - Category & Reason */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-[0.15em] text-indigo-400/80">
+              <div className="flex items-center gap-1.5">
+                <Sparkle className="w-2.5 h-2.5" />
+                <span>{comment.category} • {currentIndex}/{totalCount}</span>
+              </div>
+              <button onClick={onClose} className="hover:text-white transition-colors">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            
+            {/* The Reason - Small text on top */}
+            <p className="text-[13px] font-medium text-white/50 leading-snug">
+              {comment.message}
+            </p>
           </div>
 
-          {/* Main Split Content */}
-          <div className="grid grid-cols-2 gap-12 items-start">
-            
-            {/* LEFT: what you wrote */}
-            <div className="space-y-4">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/20">
-                you wrote:
-              </div>
-              <div className="relative p-6 bg-white/5 border border-white/5 rounded-2xl min-h-[160px] flex items-center justify-center italic text-xl text-white/40 leading-relaxed text-center">
-                "{comment.quote}"
-              </div>
-            </div>
-
-            {/* RIGHT: Logic flow */}
-            <div className="space-y-8">
-              {/* Reason */}
-              <div className="space-y-2">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-rose-400/80">
-                  reason:
-                </div>
-                <p className="text-xl font-bold leading-tight text-white/95">
-                  {comment.message}
-                </p>
-              </div>
-
-              {/* Suggestion */}
-              <div className="space-y-3">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">
-                  suggestion:
-                </div>
-                <div className="flex items-start gap-4 p-5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl">
-                  <CornerDownRight className="w-6 h-6 text-indigo-500 mt-1 shrink-0 opacity-50" />
-                  <p className="text-2xl font-medium leading-relaxed text-white">
-                    {comment.suggestion}
-                  </p>
-                </div>
-              </div>
-            </div>
+          {/* The Suggestion - Large and clear at the core */}
+          <div className="text-lg font-bold text-white leading-tight tracking-tight">
+            {comment.suggestion}
           </div>
 
           {/* Action Row */}
-          <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+          <div className="flex items-center gap-2 pt-1">
             <button
               onClick={() => onApply(comment)}
-              className="flex-1 flex items-center justify-center gap-3 py-5 bg-white text-black text-base font-bold uppercase tracking-wider rounded-2xl hover:bg-white/90 transition-all active:scale-[0.98] shadow-2xl shadow-white/5"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white text-black text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-white/90 transition-all active:scale-[0.98]"
             >
-              <Check className="w-6 h-6" />
-              Apply Fix
+              <Check className="w-3.5 h-3.5" />
+              Apply
             </button>
             <button
               onClick={() => onDismiss(comment.id)}
-              className="px-12 py-5 bg-white/5 text-white/50 text-base font-bold uppercase tracking-wider rounded-2xl hover:bg-white/10 hover:text-white transition-all"
+              className="px-5 py-2.5 bg-white/5 text-white/40 text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-white/10 hover:text-white transition-all border border-white/5"
             >
               Skip
             </button>

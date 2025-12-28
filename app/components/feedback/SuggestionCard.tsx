@@ -1,16 +1,14 @@
 "use client";
 
 import React from "react";
-import { Check, X, ArrowRight, Zap, Wind, Feather, Wand2 } from "lucide-react";
-
-export type CommentCategory = "grammar" | "clarity" | "style";
+import { Check, X, ArrowRight, Sparkle, Wand2 } from "lucide-react";
 
 export interface Comment {
   id: string;
   quote: string;
   message: string;
   suggestion: string;
-  category: CommentCategory;
+  category: string;
   startIndex: number;
   endIndex: number;
 }
@@ -22,15 +20,6 @@ interface SuggestionCardProps {
   onApply: (comment: Comment) => void;
   onDismiss: (id: string) => void;
 }
-
-const CategoryIcon = ({ category }: { category: CommentCategory }) => {
-  switch (category) {
-    case "grammar": return <Zap className="w-3.5 h-3.5" />;
-    case "clarity": return <Wind className="w-3.5 h-3.5" />;
-    case "style": return <Feather className="w-3.5 h-3.5" />;
-    default: return <Wand2 className="w-3.5 h-3.5" />;
-  }
-};
 
 export const SuggestionCard: React.FC<SuggestionCardProps> = ({
   comment,
@@ -50,7 +39,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
     >
       <div className="flex items-center justify-between mb-2">
         <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${isActive ? "text-indigo-400" : "text-white/30"}`}>
-          <CategoryIcon category={comment.category} />
+          <Sparkle className="w-3.5 h-3.5" />
           {comment.category}
         </div>
         <button 
