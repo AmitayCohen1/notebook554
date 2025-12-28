@@ -15,8 +15,7 @@ interface EditorProps {
   setContent: (content: string) => void;
   highlightRanges: Range[];
   activeCommentId: string | null;
-  onCommentClick: (id: string, position: { x: number; y: number }) => void;
-  onActiveMarkPositionChange?: (position: { x: number; y: number }) => void;
+  onCommentClick: (id: string) => void;
   isAnalyzing?: boolean;
 }
 
@@ -36,42 +35,23 @@ export const Editor: React.FC<EditorProps> = ({
   highlightRanges,
   activeCommentId,
   onCommentClick,
-  onActiveMarkPositionChange,
   isAnalyzing = false,
 }) => {
   const activeMarkRef = useRef<HTMLElement | null>(null);
 
-  // Auto-scroll AND update position for the popup
+  // Auto-scroll to active mark
   useEffect(() => {
     if (activeCommentId && activeMarkRef.current) {
-      // 1. Scroll into view
       activeMarkRef.current.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
-
-      // 2. Wait a tick for layout/scroll to settle, then report position
-      const timer = setTimeout(() => {
-        if (!activeMarkRef.current) return;
-        
-        const rect = activeMarkRef.current.getBoundingClientRect();
-        // Only report if the mark is actually visible/rendered
-        if (rect.width > 0 && rect.height > 0) {
-          onActiveMarkPositionChange?.({ 
-            x: rect.left, 
-            y: rect.bottom 
-          });
-        }
-      }, 150); // Slightly longer timeout for scroll to start/settle
-
-      return () => clearTimeout(timer);
     }
-  }, [activeCommentId, onActiveMarkPositionChange]);
+  }, [activeCommentId]);
 
   const handleIconClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    onCommentClick(id, { x: rect.left, y: rect.bottom });
+    onCommentClick(id);
   };
 
   const renderHighlights = () => {
@@ -106,7 +86,7 @@ export const Editor: React.FC<EditorProps> = ({
           <span
             onClick={(e) => handleIconClick(e, range.id)}
             className={`
-              absolute -top-6 left-0 z-20 flex items-center justify-center w-6 h-6 rounded-full cursor-pointer transition-all
+              absolute -top-8 left-0 z-20 flex items-center justify-center w-6 h-6 rounded-full cursor-pointer transition-all
               ${isActive 
                 ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] scale-110" 
                 : "bg-stone-800 text-indigo-400 border border-white/10 shadow-sm hover:bg-stone-700 hover:scale-105"
@@ -144,7 +124,7 @@ export const Editor: React.FC<EditorProps> = ({
 
   const sharedStyles: React.CSSProperties = {
     fontFamily: "Georgia, serif",
-    fontSize: "24px",
+    fontSize: "22px",
     lineHeight: "1.8",
     whiteSpace: "pre-wrap",
     wordBreak: "break-word",
@@ -153,7 +133,7 @@ export const Editor: React.FC<EditorProps> = ({
     border: "none",
     outline: "none",
     background: "transparent",
-    paddingTop: "32px",
+    paddingTop: "24px",
   };
 
   return (

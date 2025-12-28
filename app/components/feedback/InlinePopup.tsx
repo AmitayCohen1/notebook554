@@ -6,7 +6,6 @@ import { Comment } from "./SuggestionCard";
 
 interface InlinePopupProps {
   comment: Comment;
-  position: { x: number; y: number };
   currentIndex: number;
   totalCount: number;
   onApply: (comment: Comment) => void;
@@ -16,7 +15,6 @@ interface InlinePopupProps {
 
 export const InlinePopup: React.FC<InlinePopupProps> = ({
   comment,
-  position,
   currentIndex,
   totalCount,
   onApply,
@@ -28,13 +26,9 @@ export const InlinePopup: React.FC<InlinePopupProps> = ({
       {/* Backdrop */}
       <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      {/* The anchored tool */}
+      {/* Popup */}
       <div
-        className="fixed z-50 w-[640px] bg-[#0a0a0a] text-white rounded-3xl shadow-[0_40px_120px_rgba(0,0,0,1)] border border-white/10 animate-in fade-in slide-in-from-top-4 duration-500 overflow-hidden transition-all"
-        style={{
-          left: Math.min(Math.max(position.x - 320, 20), window.innerWidth - 660),
-          top: Math.min(Math.max(position.y + 20, 80), window.innerHeight - 550),
-        }}
+        className="fixed z-50 w-[640px] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0a0a0a] text-white rounded-3xl shadow-[0_40px_120px_rgba(0,0,0,1)] border border-white/10 animate-in fade-in zoom-in-95 duration-300 overflow-hidden"
       >
         {/* Progress indicator line at the very top */}
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-white/5">
